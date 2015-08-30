@@ -39,7 +39,7 @@ public class SpreadsheetReader {
     _workbook = new XSSFWorkbook(inputStream);
     for (int i = 0; i < _workbook.getNumberOfSheets(); i++) {
       XSSFSheet sheet = _workbook.getSheetAt(i);
-      _tables.put(sheet.getSheetName().toLowerCase(), new Table(sheet));
+      _tables.put(NormalizeName.normalizeName(sheet.getSheetName(), _tables.keySet()), new Table(sheet));
     }
     _loadTime = System.nanoTime() - s;
     _length = length;

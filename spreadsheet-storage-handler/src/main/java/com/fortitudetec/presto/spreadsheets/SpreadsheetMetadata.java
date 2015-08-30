@@ -49,6 +49,7 @@ import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.DoubleType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
+import com.fortitudetec.presto.spreadsheets.util.NormalizeName;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 import com.fortitudetec.presto.spreadsheets.util.Table;
 import com.fortitudetec.presto.spreadsheets.util.TableType;
@@ -305,14 +306,7 @@ public class SpreadsheetMetadata implements ConnectorMetadata {
         });
         Map<String, Path> map = new HashMap<>();
         for (FileStatus fileStatus : listStatus) {
-          String prestoSchemaName = toPrestoSchemaName(fileStatus.getPath().getName());
-          INNER: while (true) {
-            if (map.containsKey(prestoSchemaName)) {
-              prestoSchemaName = prestoSchemaName + "_dup";
-            } else {
-              break INNER;
-            }
-          }
+          String prestoSchemaName = NormalizeName.normalizeName(fileStatus.getPath().getName(), map.keySet());
           map.put(prestoSchemaName, fileStatus.getPath());
         }
         return ImmutableMap.copyOf(map);
@@ -320,11 +314,6 @@ public class SpreadsheetMetadata implements ConnectorMetadata {
         throw new PrestoException(INTERNAL_ERROR, "Unknown error", e);
       }
     }
-  }
-
-  public static String toPrestoSchemaName(String name) {
-    int index = name.lastIndexOf('.');
-    return name.substring(0, index).replace(' ', '_').replace('.', '_').toLowerCase();
   }
 
   private Path getSpreadsheetFilePath(String user, Path spreadsheetPath, String schema) {
