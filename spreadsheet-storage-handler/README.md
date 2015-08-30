@@ -2,7 +2,17 @@
 
 This storage handler allow a user to place spreadsheets (.xlsx format) in their Hdfs home directory and then perform SQL queries against them via Presto.
 
-After downloading the tarball (link here) extract into the plugin directory in your Presto installation.
+### Building
+
+Maven package command:
+
+    mvn package
+    
+The current project is based on Hadoop CD5, if you want a specific version of Hadoop use the `-Dhadoop.version=` propery to specify.
+
+    mvn package -Dhadoop.version=2.6.0
+
+After cloning and building extract the `spreadsheet-storage-handler-*-plugin.tar.gz` into the plugin directory in your Presto installation.
 
 Next configure your spreadsheet catalog by adding a `spreadsheet.properties` file in the `etc/catalog` directory in your Presto installation.
 
