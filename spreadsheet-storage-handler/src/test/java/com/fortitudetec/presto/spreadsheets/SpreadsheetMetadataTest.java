@@ -17,19 +17,19 @@
 package com.fortitudetec.presto.spreadsheets;
 
 import static com.facebook.presto.spi.type.TimeZoneKey.UTC_KEY;
+import static com.fortitudetec.presto.spreadsheets.TestUtil.PRESTO_EXAMPLE_XLSX;
+import static com.fortitudetec.presto.spreadsheets.TestUtil.SPREADSHEETS;
+import static com.fortitudetec.presto.spreadsheets.TestUtil.setupTest;
 import static java.util.Locale.ENGLISH;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
@@ -43,37 +43,16 @@ import com.google.common.collect.ImmutableMap;
 public class SpreadsheetMetadataTest {
 
   private static final String SCHEMA_NAME = "presto_example_xlsx";
-  private static final String SPREADSHEETS = "spreadsheets";
-  private static final String PRESTO_EXAMPLE_XLSX = "Presto Example.xlsx";
+
   public static final ConnectorSession SESSION = new TestingConnectorSession("user1", UTC_KEY, ENGLISH,
       System.currentTimeMillis(), ImmutableList.of(), ImmutableMap.of());
   public static final String CONNECTOR_ID = "test";
 
   private Configuration conf = new Configuration();
 
-  public static Path setupTest(Configuration conf, Class<SpreadsheetMetadataTest> clazz) throws IOException {
-    return setupTest(conf, clazz, SPREADSHEETS);
-  }
-
-  public static Path setupTest(Configuration conf, Class<SpreadsheetMetadataTest> clazz, String spreadsheetSubDir)
-      throws IOException {
-    Path projectPath = new Path("./target/tmp/" + clazz.getName());
-    FileSystem fileSystem = projectPath.getFileSystem(conf);
-    projectPath = projectPath.makeQualified(fileSystem.getUri(), fileSystem.getWorkingDirectory());
-    InputStream inputStream = clazz.getResourceAsStream("/" + PRESTO_EXAMPLE_XLSX);
-    Path userPath = new Path(projectPath, SESSION.getUser());
-    Path spreadsheetPath = new Path(userPath, spreadsheetSubDir);
-    Path file = new Path(spreadsheetPath, PRESTO_EXAMPLE_XLSX);
-    FSDataOutputStream outputStream = fileSystem.create(file);
-    IOUtils.copy(inputStream, outputStream);
-    inputStream.close();
-    outputStream.close();
-    return projectPath;
-  }
-
   @Test
   public void testListSchemaNames() throws IOException {
-    Path basePath = setupTest(conf, SpreadsheetMetadataTest.class);
+    Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
     SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(CONNECTOR_ID, conf, basePath, SPREADSHEETS);
     List<String> listSchemaNames = spreadsheetMetadata.listSchemaNames(SESSION);
     assertEquals(1, listSchemaNames.size());
@@ -82,7 +61,7 @@ public class SpreadsheetMetadataTest {
 
   @Test
   public void testListTables() throws IOException {
-    Path basePath = setupTest(conf, SpreadsheetMetadataTest.class);
+    Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
     SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(CONNECTOR_ID, conf, basePath, SPREADSHEETS);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     assertEquals(2, listTables.size());
@@ -98,7 +77,7 @@ public class SpreadsheetMetadataTest {
 
   @Test
   public void testGetTableHandle() throws IOException {
-    Path basePath = setupTest(conf, SpreadsheetMetadataTest.class);
+    Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
     SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(CONNECTOR_ID, conf, basePath, SPREADSHEETS);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     for (SchemaTableName name : listTables) {
