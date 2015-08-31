@@ -15,13 +15,14 @@
 	<id>plugin</id>
 	<formats>
 		<format>dir</format>
+		<format>tar.gz</format>
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
 
 	<dependencySets>
 		<dependencySet>
 			<useProjectArtifact>true</useProjectArtifact>
-			<outputDirectory>.</outputDirectory>
+			<outputDirectory>spreadsheet</outputDirectory>
 			<unpack>false</unpack>
 			<excludes>
 				<exclude>javax.xml.stream:stax-api:*</exclude>
