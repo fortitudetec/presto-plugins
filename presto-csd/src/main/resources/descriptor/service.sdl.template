@@ -1,0 +1,215 @@
+{
+  "name"  : "PRESTO",
+  "label" : "Presto",
+  "description": "Presto DB",
+  "version" : "|||PRESTO_CSD_VERSION|||",
+  "icon":"images/icon.png",
+  "runAs" : {
+    "user"  : "root",
+    "group" : "root"
+  },
+  "rolesWithExternalLinks":["COORDINATOR","WORKER"],
+  "hdfsDirs" : [],
+  "parcel" : {
+    "requiredTags" : [ "PRESTOCOORDINATOR", "PRESTOWORKER" ],
+    "optionalTags" : [ "PRESTO-PLUGIN" ]   
+  },
+  "serviceInit": {
+    "preStartSteps":[
+      {
+        "commandName":"create_hdfs_presto_user"
+      }
+    ]
+  },
+  "commands":[
+    {
+      "name":"create_hdfs_presto_user",
+      "label":"Create presto user directory",
+      "description":"Create presto user directory",
+      "roleName":"COORDINATOR",
+      "roleCommand":"create_hdfs_presto_user",
+      "runMode":"all"
+    }
+  ],  
+  "parameters": [
+    {
+      "configName": "node.environment",
+      "configurableInWizard": true,
+      "default": "default",
+      "description": "Set the environment name.",
+      "label": "Environment",
+      "name": "node_environment",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "configName": "node.data-dir",
+      "configurableInWizard": true,
+      "default": "/var/lib/presto/data",
+      "description": "Set the local data directory used by Presto on all nodes.",
+      "label": "Data Directory",
+      "name": "node_data_dir",
+      "required": true,
+      "type": "path",
+      "pathType": "localDataDir"
+    },
+    {
+      "configName": "http-server.http.port",
+      "configurableInWizard": true,
+      "default": 8765,
+      "description": "Set the http port used by Presto on all nodes.",
+      "label": "Http Port",
+      "name": "http_server_http_port",
+      "required": true,
+      "type": "port"
+    },
+    {
+      "configName": "http-server.log.path",
+      "configurableInWizard": false,
+      "default": "/var/log/presto/http-request.log",
+      "description": "Http Server Log Path (LogPath)",
+      "label": "Http Server Log Path (LogPath)",
+      "name": "http_server_log_path",
+      "required": true,
+      "type": "string"
+    }
+|||PRESTO_CLUSTER|||
+  ],
+  
+  "roles" : [
+    {
+      "name" : "COORDINATOR",
+      "label" : "Presto Coordinator",
+      "pluralLabel" : "Presto Coordinators",
+      "topology":{
+        "minInstances":1,
+        "maxInstances":1
+      },      
+      "jvmBased" : true,
+      "startRunner" : {
+        "program" : "scripts/control.sh",
+        "args" : [ "start-coordinator", "${node_data_dir}", "/var/log/presto" ],
+        "environmentVariables" : {
+        }
+      },
+      "externalLink" : {
+      	"name":"presto_coordinator",
+      	"label":"Presto Coordinator UI",
+      	"url":"http://${host}:${http_server_http_port}"
+      },
+      "configWriter" : {
+        "generators" : [
+      	  {
+            "filename" : "config.properties",
+            "configFormat" : "properties",
+            "excludedParams":["node_environment","node_data_dir","jvm_config"]
+          },
+          {
+            "filename" : "node.properties",
+            "configFormat" : "properties",
+            "includedParams":["node_environment","node_data_dir"]
+          },
+          {
+            "filename" : "jvm.config",
+            "configFormat" : "properties",
+            "includedParams":["jvm_config"]
+          }
+        ],
+        "peerConfigGenerators":[
+          {
+            "filename":"presto-coordinator.properties",
+            "params":["http_server_http_port"],
+            "roleName":"COORDINATOR"
+          }
+        ]
+      },
+      "parameters": [
+    {
+      "configName": "jvm.config",
+      "configurableInWizard": false,
+      "default": "-server -Xmx16G -Xms16G -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError",
+      "description": "Configure JVM options.",
+      "label": "JVM Options",
+      "name": "jvm_config",
+      "required": true,
+      "type": "string"
+    }
+      ],
+      "commands":[
+        {
+          "name":"create_hdfs_presto_user",
+          "label":"Coordinator - Create presto user directory",
+          "description":"Coordinator - Create presto user directory",
+          "expectedExitCodes": [0],
+          "requiredRoleState": "stopped",
+          "commandRunner": {
+            "program":"scripts/control.sh",
+            "args":["create_hdfs_dir","/user/presto"]
+          }
+        }
+      ]
+   },
+   {
+     "name" : "WORKER",
+     "label" : "Presto Worker",
+     "pluralLabel" : "Presto Workers",
+     "topology":{
+       "minInstances":0
+     },
+     "jvmBased" : true,
+     "startRunner" : {
+       "program" : "scripts/control.sh",
+       "args" : [ "start-worker", "${node_data_dir}", "/var/log/presto" ],
+       "environmentVariables" : {
+       }
+     },
+     "additionalExternalLinks" : [{
+     	"name":"presto_worker",
+     	"label":"Presto Worker UI",
+     	"url":"http://${host}:${http_server_http_port}"
+     }],
+
+     "configWriter" : {
+        "generators" : [
+      	  {
+            "filename" : "config.properties",
+            "configFormat" : "properties",
+            "excludedParams":["node_environment","node_data_dir","jvm_config"]
+          },
+          {
+            "filename" : "node.properties",
+            "configFormat" : "properties",
+            "includedParams":["node_environment","node_data_dir"]            
+          },
+          {
+            "filename" : "jvm.config",
+            "configFormat" : "properties",
+            "includedParams":["jvm_config"]
+          }
+        ],
+        "peerConfigGenerators":[
+          {
+            "filename":"presto-coordinator.properties",
+            "params":["http_server_http_port"],
+            "roleName":"COORDINATOR"
+          }
+        ]
+      },
+      "parameters": [
+    {
+      "configName": "jvm.config",
+      "configurableInWizard": false,
+      "default": "-server -Xmx16G -Xms16G -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError",
+      "description": "Configure JVM options.",
+      "label": "JVM Options",
+      "name": "jvm_config",
+      "required": true,
+      "type": "string"
+    }
+      ],
+      "commands":[]
+    }   
+  ],
+  "serviceDependencies" : []
+}
+
