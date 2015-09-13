@@ -33,6 +33,8 @@ under the License.
 		<junit.version>4.12</junit.version>
 		<apache-poi.version>3.12</apache-poi.version>
 		<json-org.version>20090211</json-org.version>
+		<hadoop-client.version>2.6.0-cdh5.4.5</hadoop-client.version>
+		<parquet.version>1.6.0</parquet.version>
 	</properties>
 
 	<dependencyManagement>
@@ -87,12 +89,23 @@ under the License.
 				<artifactId>poi-ooxml</artifactId>
 				<version>${apache-poi.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-client</artifactId>
+				<version>${hadoop-client.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.twitter</groupId>
+				<artifactId>parquet-avro</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	
 	<modules>
 		<module>spreadsheet-storage-handler</module>
+		<module>pronto-storage-handler</module>
 		<module>presto-csd</module>
 	</modules>
 
