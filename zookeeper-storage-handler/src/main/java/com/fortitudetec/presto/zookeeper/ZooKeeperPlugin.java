@@ -14,32 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
-import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
+import java.util.List;
 
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
-  }
+import com.facebook.presto.spi.ConnectorFactory;
+import com.facebook.presto.spi.Plugin;
+import com.google.common.collect.ImmutableList;
 
-  @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
-  }
+public class ZooKeeperPlugin implements Plugin {
 
   @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
+  public <T> List<T> getServices(Class<T> type) {
+    if (type == ConnectorFactory.class) {
+      return ImmutableList.of(type.cast(new ZooKeeperConnectorFactory(getClassLoader())));
+    }
+    return ImmutableList.of();
   }
 
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
+  private static ClassLoader getClassLoader() {
+    return firstNonNull(Thread.currentThread().getContextClassLoader(), ZooKeeperPlugin.class.getClassLoader());
   }
-
 }

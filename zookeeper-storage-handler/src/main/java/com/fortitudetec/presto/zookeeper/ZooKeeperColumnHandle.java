@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fortitudetec.presto.BaseColumnHandle;
 
-public class SpreadsheetColumnHandle implements BaseColumnHandle {
+public class ZooKeeperColumnHandle implements BaseColumnHandle {
 
   private final String _columnName;
   private final Type _type;
   private final String _connectorId;
 
   @JsonCreator
-  public SpreadsheetColumnHandle(@JsonProperty("connectorId") String connectorId,
+  public ZooKeeperColumnHandle(@JsonProperty("connectorId") String connectorId,
       @JsonProperty("columnName") String columnName, @JsonProperty("type") Type type) {
     _connectorId = connectorId;
     _columnName = columnName;

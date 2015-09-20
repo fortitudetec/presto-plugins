@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
 import java.util.List;
 
@@ -23,14 +23,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fortitudetec.presto.BaseSplit;
 import com.google.common.collect.ImmutableList;
 
-public class SpreadsheetSplit implements BaseSplit {
+public class ZooKeeperSplit implements BaseSplit {
   private final String _connectorId;
-  private final SpreadsheetTableHandle _spreadsheetTableHandle;
+  private final ZooKeeperTableHandle _tableHandle;
 
-  public SpreadsheetSplit(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("spreadsheetTableHandle") SpreadsheetTableHandle spreadsheetTableHandle) {
+  public ZooKeeperSplit(@JsonProperty("connectorId") String connectorId,
+      @JsonProperty("tableHandle") ZooKeeperTableHandle tableHandle) {
     _connectorId = connectorId;
-    this._spreadsheetTableHandle = spreadsheetTableHandle;
+    _tableHandle = tableHandle;
   }
 
   @JsonProperty
@@ -39,8 +39,8 @@ public class SpreadsheetSplit implements BaseSplit {
   }
 
   @JsonProperty
-  public SpreadsheetTableHandle getSpreadsheetTableHandle() {
-    return _spreadsheetTableHandle;
+  public ZooKeeperTableHandle getTableHandle() {
+    return _tableHandle;
   }
 
   @Override

@@ -19,7 +19,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>com.fortitudetec.presto</groupId>
-	<artifactId>spreadsheet-storage-handler</artifactId>
+	<artifactId>zookeeper-storage-handler</artifactId>
 	<version>${presto.version}.1.0</version>
 	<packaging>jar</packaging>
 	<repositories>
@@ -30,7 +30,7 @@
 	</repositories>
 
 	<properties>
-		<project.parcel.name>PRESTOSPREADSHEET</project.parcel.name>
+		<project.parcel.name>PRESTOZOOKEEPER</project.parcel.name>
 	</properties>
 
 	<dependencies>
@@ -39,12 +39,8 @@
 			<artifactId>base-storage-handler</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.facebook.presto</groupId>
@@ -58,11 +54,6 @@
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-client</artifactId>
-		</dependency>
-
 		<!-- Test Deps -->
 		<dependency>
 			<groupId>com.facebook.presto</groupId>

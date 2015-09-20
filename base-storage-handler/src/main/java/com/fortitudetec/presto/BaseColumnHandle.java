@@ -14,32 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto;
 
 import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import com.facebook.presto.spi.type.Type;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
+public interface BaseColumnHandle extends ColumnHandle {
 
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
-  }
+  String getColumnName();
 
-  @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
-  }
-
-  @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
-  }
+  Type getType();
+  
+  String getConnectorId();
 
 }

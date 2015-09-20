@@ -16,12 +16,12 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.SchemaTableName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fortitudetec.presto.BaseTableHandle;
 
-public class SpreadsheetTableHandle implements ConnectorTableHandle {
+public class SpreadsheetTableHandle implements BaseTableHandle {
 
   private final String _user;
   private final SchemaTableName _tableName;

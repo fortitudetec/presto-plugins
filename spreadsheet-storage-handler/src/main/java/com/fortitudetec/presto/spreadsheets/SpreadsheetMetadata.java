@@ -16,15 +16,13 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import io.airlift.slice.Slice;
+import static com.facebook.presto.spi.StandardErrorCode.INTERNAL_ERROR;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -35,20 +33,15 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ColumnMetadata;
-import com.facebook.presto.spi.ConnectorInsertTableHandle;
-import com.facebook.presto.spi.ConnectorMetadata;
-import com.facebook.presto.spi.ConnectorOutputTableHandle;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
-import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
-import com.facebook.presto.spi.SchemaTablePrefix;
 import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.DoubleType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
+import com.fortitudetec.presto.BaseReadOnlyConnectorMetadata;
 import com.fortitudetec.presto.spreadsheets.util.NormalizeName;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 import com.fortitudetec.presto.spreadsheets.util.Table;
@@ -57,9 +50,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 
-import static com.facebook.presto.spi.StandardErrorCode.*;
-
-public class SpreadsheetMetadata implements ConnectorMetadata {
+public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
 
   private final Path _basePath;
   private final Configuration _configuration;
@@ -85,18 +76,6 @@ public class SpreadsheetMetadata implements ConnectorMetadata {
     Path spreadsheetPath = getSpreadsheetBasePath(session.getUser());
     Path filePath = getSpreadsheetFilePath(session.getUser(), spreadsheetPath, tableName.getSchemaName());
     return new SpreadsheetTableHandle(_connectorId, session.getUser(), tableName, filePath.toString());
-  }
-
-  @Override
-  public ConnectorTableMetadata getTableMetadata(ConnectorSession session, ConnectorTableHandle table) {
-    SpreadsheetTableHandle spreadsheetTableHandle = (SpreadsheetTableHandle) table;
-    Builder<ColumnMetadata> builder = ImmutableList.builder();
-    Map<String, ColumnHandle> columnHandles = getColumnHandles(session, table);
-    for (Entry<String, ColumnHandle> e : columnHandles.entrySet()) {
-      ColumnMetadata columnMetadata = getColumnMetadata(session, table, e.getValue());
-      builder.add(columnMetadata);
-    }
-    return new ConnectorTableMetadata(spreadsheetTableHandle.getTableName(), builder.build());
   }
 
   @Override
@@ -131,103 +110,6 @@ public class SpreadsheetMetadata implements ConnectorMetadata {
       builder.put(columnName, new SpreadsheetColumnHandle(_connectorId, columnName, type));
     }
     return builder.build();
-  }
-
-  @Override
-  public ColumnMetadata getColumnMetadata(ConnectorSession session, ConnectorTableHandle tableHandle,
-      ColumnHandle columnHandle) {
-    SpreadsheetColumnHandle spreadsheetColumnHandle = (SpreadsheetColumnHandle) columnHandle;
-    return new ColumnMetadata(spreadsheetColumnHandle.getColumnName(), spreadsheetColumnHandle.getType(), false);
-  }
-
-  @Override
-  public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession session, SchemaTablePrefix prefix) {
-    ImmutableMap.Builder<SchemaTableName, List<ColumnMetadata>> mapBuilder = ImmutableMap.builder();
-    List<String> listSchemaNames = listSchemaNames(session);
-    for (String schema : listSchemaNames) {
-      List<SchemaTableName> listTables = listTables(session, schema);
-      for (SchemaTableName schemaTableName : listTables) {
-        if (prefix.matches(schemaTableName)) {
-          Builder<ColumnMetadata> builder = ImmutableList.builder();
-          ConnectorTableHandle tableHandle = getTableHandle(session, schemaTableName);
-          Map<String, ColumnHandle> columnHandles = getColumnHandles(session, tableHandle);
-          for (Entry<String, ColumnHandle> e : columnHandles.entrySet()) {
-            builder.add(getColumnMetadata(session, tableHandle, e.getValue()));
-          }
-          mapBuilder.put(schemaTableName, builder.build());
-        }
-      }
-    }
-    return mapBuilder.build();
-  }
-
-  // //////////
-
-  @Override
-  public ColumnHandle getSampleWeightColumnHandle(ConnectorSession session, ConnectorTableHandle tableHandle) {
-    return null;
-  }
-
-  @Override
-  public boolean canCreateSampledTables(ConnectorSession session) {
-    return false;
-  }
-
-  @Override
-  public void createTable(ConnectorSession session, ConnectorTableMetadata tableMetadata) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support creates");
-  }
-
-  @Override
-  public void dropTable(ConnectorSession session, ConnectorTableHandle tableHandle) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support drops");
-  }
-
-  @Override
-  public void renameTable(ConnectorSession session, ConnectorTableHandle tableHandle, SchemaTableName newTableName) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support renames");
-  }
-
-  @Override
-  public ConnectorOutputTableHandle beginCreateTable(ConnectorSession session, ConnectorTableMetadata tableMetadata) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support creates");
-  }
-
-  @Override
-  public void commitCreateTable(ConnectorSession session, ConnectorOutputTableHandle tableHandle,
-      Collection<Slice> fragments) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support creates");
-  }
-
-  @Override
-  public ConnectorInsertTableHandle beginInsert(ConnectorSession session, ConnectorTableHandle tableHandle) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support inserts");
-  }
-
-  @Override
-  public void commitInsert(ConnectorSession session, ConnectorInsertTableHandle insertHandle,
-      Collection<Slice> fragments) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support inserts");
-  }
-
-  @Override
-  public void createView(ConnectorSession session, SchemaTableName viewName, String viewData, boolean replace) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support views");
-  }
-
-  @Override
-  public void dropView(ConnectorSession session, SchemaTableName viewName) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support views");
-  }
-
-  @Override
-  public List<SchemaTableName> listViews(ConnectorSession session, String schemaNameOrNull) {
-    return ImmutableList.of();
-  }
-
-  @Override
-  public Map<SchemaTableName, String> getViews(ConnectorSession session, SchemaTablePrefix prefix) {
-    return ImmutableMap.of();
   }
 
   class ListTables implements PrivilegedAction<List<SchemaTableName>> {

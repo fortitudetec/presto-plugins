@@ -21,6 +21,21 @@
       }
     ]
   },
+  "serviceDependencies" : [
+    {
+      "name" : "HDFS", 
+      "required" : "true"
+    },
+    {
+      "name" : "ZOOKEEPER"
+    },
+    {
+      "name" : "HIVE"
+    },
+    {
+      "name" : "KAFKA"
+    },
+  ],
   "commands":[
     {
       "name":"create_hdfs_presto_user",
@@ -210,6 +225,5 @@
       "commands":[]
     }   
   ],
-  "serviceDependencies" : []
 }
 

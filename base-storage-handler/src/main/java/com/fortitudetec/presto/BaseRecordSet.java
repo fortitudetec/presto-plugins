@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto;
+
+import java.util.List;
 
 import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import com.facebook.presto.spi.RecordSet;
+import com.facebook.presto.spi.type.Type;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
+public abstract class BaseRecordSet implements RecordSet {
 
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
+  private final List<Type> _types;
+
+  public BaseRecordSet(List<? extends ColumnHandle> columnHandles) {
+    Builder<Type> builder = ImmutableList.builder();
+    for (ColumnHandle columnHandle : columnHandles) {
+      BaseColumnHandle baseColumnHandle = (BaseColumnHandle) columnHandle;
+      builder.add(baseColumnHandle.getType());
+    }
+    _types = builder.build();
   }
 
   @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
-  }
-
-  @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
+  public List<Type> getColumnTypes() {
+    return _types;
   }
 
 }

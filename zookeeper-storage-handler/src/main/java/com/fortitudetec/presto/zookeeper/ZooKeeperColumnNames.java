@@ -14,32 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
-import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
-
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
-
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
-  }
-
-  @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
-  }
-
-  @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
-  }
-
+public class ZooKeeperColumnNames {
+  public static final String VERSION = "version";
+  public static final String PZXID = "pzxid";
+  public static final String MZXID = "mzxid";
+  public static final String NUMCHILDREN = "numchildren";
+  public static final String MTIME = "mtime";
+  public static final String EPHEMERALOWNER = "ephemeralowner";
+  public static final String DATALENGTH = "datalength";
+  public static final String CZXID = "czxid";
+  public static final String CVERSION = "cversion";
+  public static final String CTIME = "ctime";
+  public static final String AVERSION = "aversion";
+  public static final String DATA = "data";
+  public static final String DATA_AS_STRING = "data_as_string";
+  public static final String PATH = "path";
 }

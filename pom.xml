@@ -34,7 +34,10 @@ under the License.
 		<apache-poi.version>3.12</apache-poi.version>
 		<json-org.version>20090211</json-org.version>
 		<hadoop-client.version>2.6.0-cdh5.4.5</hadoop-client.version>
+		<zookeeper.version>3.4.5-cdh5.4.5</zookeeper.version>
 		<parquet.version>1.6.0</parquet.version>
+		<spark-core.version>2.2</spark-core.version>
+		<base-storage-handler.version>${presto.version}.1.0</base-storage-handler.version>
 	</properties>
 
 	<dependencyManagement>
@@ -52,6 +55,11 @@ under the License.
 			<dependency>
 				<groupId>com.facebook.presto</groupId>
 				<artifactId>presto-main</artifactId>
+				<version>${presto.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.facebook.presto</groupId>
+				<artifactId>presto-jdbc</artifactId>
 				<version>${presto.version}</version>
 			</dependency>
 			<dependency>
@@ -99,13 +107,30 @@ under the License.
 				<artifactId>parquet-avro</artifactId>
 				<version>${parquet.version}</version>
 			</dependency>
+			<dependency>
+			    <groupId>com.sparkjava</groupId>
+			    <artifactId>spark-core</artifactId>
+			    <version>${spark-core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper</artifactId>
+				<version>${zookeeper.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fortitudetec.presto</groupId>
+				<artifactId>base-storage-handler</artifactId>
+				<version>${base-storage-handler.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	
 	<modules>
 		<module>spreadsheet-storage-handler</module>
+		<module>zookeeper-storage-handler</module>
 		<module>pronto-storage-handler</module>
+		<module>base-storage-handler</module>
 		<module>presto-csd</module>
 	</modules>
 

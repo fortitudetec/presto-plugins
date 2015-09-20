@@ -19,8 +19,8 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>com.fortitudetec.presto</groupId>
-	<artifactId>spreadsheet-storage-handler</artifactId>
-	<version>${presto.version}.1.0</version>
+	<artifactId>base-storage-handler</artifactId>
+	<version>${base-storage-handler.version}</version>
 	<packaging>jar</packaging>
 	<repositories>
 		<repository>
@@ -29,23 +29,8 @@
 		</repository>
 	</repositories>
 
-	<properties>
-		<project.parcel.name>PRESTOSPREADSHEET</project.parcel.name>
-	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.fortitudetec.presto</groupId>
-			<artifactId>base-storage-handler</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.facebook.presto</groupId>
 			<artifactId>presto-spi</artifactId>
@@ -58,11 +43,6 @@
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-client</artifactId>
-		</dependency>
-
 		<!-- Test Deps -->
 		<dependency>
 			<groupId>com.facebook.presto</groupId>
@@ -75,43 +55,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>plugin</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<descriptors>
-								<descriptor>src/assemble/plugin.xml</descriptor>
-							</descriptors>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>plugin</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<finalName>${project.parcel.name}-${project.version}</finalName>
-							<descriptors>
-								<descriptor>src/assemble/parcel.xml</descriptor>
-							</descriptors>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 </project>

@@ -14,32 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
 import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import com.facebook.presto.spi.ConnectorPartition;
+import com.facebook.presto.spi.TupleDomain;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
+@SuppressWarnings("deprecation")
+public class ZooKeeperPartition implements ConnectorPartition {
 
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
+  private final TupleDomain<ColumnHandle> _tupleDomain;
+  private final ZooKeeperTableHandle _tableHandle;
+
+  public ZooKeeperPartition(ZooKeeperTableHandle tableHandle, TupleDomain<ColumnHandle> tupleDomain) {
+    _tupleDomain = tupleDomain;
+    _tableHandle = tableHandle;
   }
 
   @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
+  public String getPartitionId() {
+    return _tableHandle.toString();
   }
 
   @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
+  public TupleDomain<ColumnHandle> getTupleDomain() {
+    return _tupleDomain;
   }
 
 }

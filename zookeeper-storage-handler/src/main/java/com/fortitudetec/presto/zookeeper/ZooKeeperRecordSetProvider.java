@@ -14,32 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
+
+import java.util.List;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ConnectorRecordSetProvider;
+import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import com.facebook.presto.spi.RecordSet;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
+public class ZooKeeperRecordSetProvider implements ConnectorRecordSetProvider {
 
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
+  private final String _zkConnection;
+  private final int _sessionTimeout;
+
+  public ZooKeeperRecordSetProvider(String zkConnection, int sessionTimeout) {
+    _zkConnection = zkConnection;
+    _sessionTimeout = sessionTimeout;
   }
 
   @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
-  }
-
-  @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
+  public RecordSet getRecordSet(ConnectorSession connectorSession, ConnectorSplit split,
+      List<? extends ColumnHandle> columnHandles) {
+    return new ZooKeeperRecordSet(_zkConnection, _sessionTimeout, columnHandles);
   }
 
 }

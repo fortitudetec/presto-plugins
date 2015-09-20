@@ -14,35 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
-import com.facebook.presto.spi.type.Type;
+import com.facebook.presto.spi.SchemaTableName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fortitudetec.presto.BaseColumnHandle;
+import com.fortitudetec.presto.BaseTableHandle;
 
-public class SpreadsheetColumnHandle implements BaseColumnHandle {
+public class ZooKeeperTableHandle implements BaseTableHandle {
 
-  private final String _columnName;
-  private final Type _type;
+  private final SchemaTableName _tableName;
   private final String _connectorId;
 
   @JsonCreator
-  public SpreadsheetColumnHandle(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("columnName") String columnName, @JsonProperty("type") Type type) {
+  public ZooKeeperTableHandle(@JsonProperty("connectorId") String connectorId,
+      @JsonProperty("tableName") SchemaTableName tableName) {
     _connectorId = connectorId;
-    _columnName = columnName;
-    _type = type;
+    _tableName = tableName;
   }
 
   @JsonProperty
-  public String getColumnName() {
-    return _columnName;
-  }
-
-  @JsonProperty
-  public Type getType() {
-    return _type;
+  public SchemaTableName getTableName() {
+    return _tableName;
   }
 
   @JsonProperty
@@ -52,8 +45,7 @@ public class SpreadsheetColumnHandle implements BaseColumnHandle {
 
   @Override
   public String toString() {
-    return "SpreadsheetColumnHandle [_columnName=" + _columnName + ", _type=" + _type + ", _connectorId="
-        + _connectorId + "]";
+    return "ZooKeeperTableHandle [_tableName=" + _tableName + ", _connectorId=" + _connectorId + "]";
   }
 
 }

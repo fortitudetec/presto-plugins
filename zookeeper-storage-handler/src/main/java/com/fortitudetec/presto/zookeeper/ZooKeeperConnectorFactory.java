@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
-import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import java.util.Map;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
+import com.facebook.presto.spi.Connector;
+import com.facebook.presto.spi.ConnectorFactory;
 
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
+public class ZooKeeperConnectorFactory implements ConnectorFactory {
+
+  public ZooKeeperConnectorFactory(ClassLoader classLoader) {
+
   }
 
   @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
+  public String getName() {
+    return "zookeeper";
   }
 
   @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
+  public Connector create(String connectorId, Map<String, String> config) {
+    String connection = config.get("connection");
+    int sessionTimeout = Integer.parseInt(config.get("sessionTimeout"));
+    return new ZooKeeperConnector(connectorId, connection, sessionTimeout);
   }
 
 }

@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.fortitudetec.presto.BaseHandleResolver;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
+public class ZooKeeperHandleResolver extends BaseHandleResolver {
 
-  public SpreadsheetHandleResolver(String connectorId) {
+  public ZooKeeperHandleResolver(String connectorId) {
     super(connectorId);
   }
 
   @Override
   public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return SpreadsheetTableHandle.class;
+    return ZooKeeperTableHandle.class;
   }
 
   @Override
   public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
+    return ZooKeeperColumnHandle.class;
   }
 
   @Override
   public Class<? extends ConnectorSplit> getSplitClass() {
-    return SpreadsheetSplit.class;
+    return ZooKeeperSplit.class;
   }
 
 }
