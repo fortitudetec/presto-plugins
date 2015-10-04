@@ -16,28 +16,24 @@
  */
 package com.fortitudetec.presto.spreadsheets.util;
 
-public enum TableType {
-  STRING(0), BOOLEAN(1), NUMBER(2), ERROR(3), BLANK(4);
-  public final int type;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  private TableType(int type) {
-    this.type = type;
+public class Util {
+
+  private static final String UTF_8 = "UTF-8";
+
+  public static void writeString(DataOutput out, String s) throws IOException {
+    byte[] bs = s.getBytes(UTF_8);
+    out.writeInt(bs.length);
+    out.write(bs);
   }
 
-  public static TableType lookup(int type) {
-    switch (type) {
-    case 0:
-      return STRING;
-    case 1:
-      return BOOLEAN;
-    case 2:
-      return NUMBER;
-    case 3:
-      return ERROR;
-    case 4:
-      return BLANK;
-    default:
-      throw new RuntimeException("Type [" + type + "] not found.");
-    }
+  public static String readString(DataInput in) throws IOException {
+    int len = in.readInt();
+    byte[] buf = new byte[len];
+    in.readFully(buf);
+    return new String(buf, UTF_8);
   }
 }

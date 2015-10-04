@@ -32,11 +32,12 @@ public class SpreadsheetConnector implements Connector {
   private final ConnectorSplitManager _splitManager;
   private final ConnectorRecordSetProvider _recordSetProvider;
 
-  public SpreadsheetConnector(String connectorId, Configuration configuration, Path basePath, String spreadsheetSubDir) {
-    _metadata = new SpreadsheetMetadata(connectorId, configuration, basePath, spreadsheetSubDir);
+  public SpreadsheetConnector(String connectorId, Configuration configuration, Path basePath, String spreadsheetSubDir,
+      boolean useFileCache) {
+    _metadata = new SpreadsheetMetadata(connectorId, configuration, basePath, spreadsheetSubDir, useFileCache);
     _handleResolver = new SpreadsheetHandleResolver(connectorId);
     _splitManager = new SpreadsheetSplitManager(connectorId);
-    _recordSetProvider = new SpreadsheetRecordSetProvider(configuration);
+    _recordSetProvider = new SpreadsheetRecordSetProvider(configuration, useFileCache);
   }
 
   @Override

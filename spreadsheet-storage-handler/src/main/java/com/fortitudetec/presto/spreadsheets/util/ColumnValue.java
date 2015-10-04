@@ -16,10 +16,20 @@
  */
 package com.fortitudetec.presto.spreadsheets.util;
 
-public class ColumnValue {
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  public final TableType type;
-  public final Object value;
+import org.apache.hadoop.io.Writable;
+
+public class ColumnValue implements Writable {
+
+  public TableType type;
+  public Object value;
+
+  public ColumnValue() {
+
+  }
 
   public ColumnValue(TableType type, Object value) {
     this.type = type;
@@ -31,4 +41,49 @@ public class ColumnValue {
     return "ColumnValue [type=" + type + ", value=" + value + "]";
   }
 
+  @Override
+  public void write(DataOutput out) throws IOException {
+    out.writeInt(type.type);
+    switch (type) {
+    case BLANK:
+      return;
+    case BOOLEAN:
+      out.writeBoolean((boolean) value);
+      return;
+    case ERROR:
+      out.writeByte((byte) value);
+      return;
+    case NUMBER:
+      out.writeDouble((double) value);
+      return;
+    case STRING:
+      Util.writeString(out, (String) value);
+      return;
+    default:
+      throw new IOException("Type [" + type + "] not supported.");
+    }
+  }
+
+  @Override
+  public void readFields(DataInput in) throws IOException {
+    type = TableType.lookup(in.readInt());
+    switch (type) {
+    case BLANK:
+      return;
+    case BOOLEAN:
+      value = in.readBoolean();
+      return;
+    case ERROR:
+      value = in.readByte();
+      return;
+    case NUMBER:
+      value = in.readDouble();
+      return;
+    case STRING:
+      value = Util.readString(in);
+      return;
+    default:
+      throw new IOException("Type [" + type + "] not supported.");
+    }
+  }
 }

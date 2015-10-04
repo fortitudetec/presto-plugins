@@ -56,7 +56,12 @@ public class SpreadsheetConnectorFactory implements ConnectorFactory {
   public Connector create(String connectorId, Map<String, String> config) {
     Path basePath = new Path(config.get("basepath"));
     String spreadsheetSubDir = config.get("subdir");
-    return new SpreadsheetConnector(connectorId, _configuration, basePath, spreadsheetSubDir);
+    String useFileCacheStr = config.get("useFileCache");
+    boolean useFileCache = true;
+    if (useFileCacheStr != null) {
+      useFileCache = Boolean.parseBoolean(useFileCacheStr);
+    }
+    return new SpreadsheetConnector(connectorId, _configuration, basePath, spreadsheetSubDir, useFileCache);
   }
 
 }

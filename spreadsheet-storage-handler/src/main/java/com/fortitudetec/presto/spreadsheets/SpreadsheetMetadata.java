@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -57,12 +56,15 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   private final Configuration _configuration;
   private final String _spreadsheetSubDir;
   private final String _connectorId;
+  private final boolean _useFileCache;
 
-  public SpreadsheetMetadata(String connectorId, Configuration configuration, Path basePath, String spreadsheetSubDir) {
+  public SpreadsheetMetadata(String connectorId, Configuration configuration, Path basePath, String spreadsheetSubDir,
+      boolean useFileCache) {
     _connectorId = connectorId;
     _basePath = basePath;
     _configuration = configuration;
     _spreadsheetSubDir = spreadsheetSubDir;
+    _useFileCache = useFileCache;
   }
 
   @Override
@@ -87,7 +89,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     Path spreadsheetBasePath = getSpreadsheetBasePath(session.getUser());
     Path filePath = getSpreadsheetFilePath(session.getUser(), spreadsheetBasePath, schemaNameOrNull);
     UserGroupInformation ugi = UserGroupInformation.createRemoteUser(session.getUser());
-    SpreadsheetReader spreadSheetHelper = ugi.doAs(new GetSpreadsheetHelper(filePath, _configuration));
+    SpreadsheetReader spreadSheetHelper = ugi.doAs(new GetSpreadsheetHelper(_useFileCache, filePath, _configuration));
     List<String> tableNames = spreadSheetHelper.getTableNames();
     Builder<SchemaTableName> builder = ImmutableList.builder();
     for (String table : tableNames) {
@@ -99,7 +101,8 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   @Override
   public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle) {
     SpreadsheetTableHandle spreadsheetTableHandle = (SpreadsheetTableHandle) tableHandle;
-    SpreadsheetReader spreadSheetHelper = getSpreadSheetHelper(session, spreadsheetTableHandle, _configuration);
+    SpreadsheetReader spreadSheetHelper = getSpreadSheetHelper(session, spreadsheetTableHandle, _configuration,
+        _useFileCache);
     SchemaTableName schemaTableName = spreadsheetTableHandle.getTableName();
     String tableName = schemaTableName.getTableName();
     Table table = spreadSheetHelper.getTable(tableName);
@@ -117,20 +120,18 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
 
     private final Path _file;
     private final String _schemaName;
+    private final boolean _useFileCache;
 
-    public ListTables(String schemaName, Path file) {
+    public ListTables(String schemaName, Path file, boolean useFileCache) {
       _file = file;
       _schemaName = schemaName;
+      _useFileCache = useFileCache;
     }
 
     @Override
     public List<SchemaTableName> run() {
       try {
-        FileSystem fileSystem = _file.getFileSystem(_configuration);
-        FSDataInputStream inputStream = fileSystem.open(_file);
-        FileStatus fileStatus = fileSystem.getFileStatus(_file);
-        SpreadsheetReader spreadSheetHelper = new SpreadsheetReader(inputStream, fileStatus.getLen());
-        inputStream.close();
+        SpreadsheetReader spreadSheetHelper = new SpreadsheetReader(_useFileCache, _configuration, _file);
         List<String> tableNames = spreadSheetHelper.getTableNames();
         Builder<SchemaTableName> builder = ImmutableList.builder();
         for (String table : tableNames) {
@@ -148,8 +149,10 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
 
     private final Path _file;
     private final Configuration _configuration;
+    private final boolean _useFileCache;
 
-    public GetSpreadsheetHelper(Path file, Configuration configuration) {
+    public GetSpreadsheetHelper(boolean useFileCache, Path file, Configuration configuration) {
+      _useFileCache = useFileCache;
       _file = file;
       _configuration = configuration;
     }
@@ -157,12 +160,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     @Override
     public SpreadsheetReader run() {
       try {
-        FileSystem fileSystem = _file.getFileSystem(_configuration);
-        FileStatus fileStatus = fileSystem.getFileStatus(_file);
-        FSDataInputStream inputStream = fileSystem.open(_file);
-        SpreadsheetReader spreadSheetHelper = new SpreadsheetReader(inputStream, fileStatus.getLen());
-        inputStream.close();
-        return spreadSheetHelper;
+        return new SpreadsheetReader(_useFileCache, _configuration, _file);
       } catch (IOException e) {
         throw new PrestoException(INTERNAL_ERROR, "Unknown error", e);
       }
@@ -184,7 +182,11 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
         FileStatus[] listStatus = fileSystem.listStatus(path, new PathFilter() {
           @Override
           public boolean accept(Path path) {
-            return path.getName().endsWith(".xlsx");
+            String name = path.getName();
+            if (name.startsWith(".")) {
+              return false;
+            }
+            return name.endsWith(".xlsx");
           }
         });
         Map<String, Path> map = new HashMap<>();
@@ -227,8 +229,9 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   }
 
   public static SpreadsheetReader getSpreadSheetHelper(ConnectorSession session,
-      SpreadsheetTableHandle spreadsheetTableHandle, Configuration configuration) {
+      SpreadsheetTableHandle spreadsheetTableHandle, Configuration configuration, boolean useFileCache) {
     UserGroupInformation ugi = UserGroupInformation.createRemoteUser(session.getUser());
-    return ugi.doAs(new GetSpreadsheetHelper(new Path(spreadsheetTableHandle.getSpreadsheetPath()), configuration));
+    return ugi.doAs(new GetSpreadsheetHelper(useFileCache, new Path(spreadsheetTableHandle.getSpreadsheetPath()),
+        configuration));
   }
 }

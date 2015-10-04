@@ -17,11 +17,19 @@
 package com.fortitudetec.presto.spreadsheets.util;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -29,21 +37,113 @@ import com.google.common.collect.ImmutableList;
 
 public class SpreadsheetReader {
 
-  private final XSSFWorkbook _workbook;
+  private static final Log LOG = LogFactory.getLog(SpreadsheetReader.class);
+
   private final Map<String, Table> _tables = new ConcurrentHashMap<String, Table>();
   private final long _length;
   private final long _loadTime;
+  private final boolean _fileCache;
 
-  public SpreadsheetReader(InputStream inputStream, long length) throws IOException {
+  public SpreadsheetReader(boolean useFileCache, Configuration configuration, Path file) throws IOException {
+    _fileCache = useFileCache;
+    FileSystem fileSystem = file.getFileSystem(configuration);
+    FileStatus fileStatus = fileSystem.getFileStatus(file);
     long s = System.nanoTime();
-    _workbook = new XSSFWorkbook(inputStream);
-    for (int i = 0; i < _workbook.getNumberOfSheets(); i++) {
-      XSSFSheet sheet = _workbook.getSheetAt(i);
-      _tables.put(NormalizeName.normalizeName(sheet.getSheetName(), _tables.keySet()), new Table(sheet));
+    _length = fileStatus.getLen();
+    if (_fileCache) {
+      if (!isCacheValid(fileStatus, fileSystem, file)) {
+        buildCache(fileSystem, file);
+      }
+      loadSheets(fileSystem, file);
+    } else {
+      loadSheetsDirectly(fileSystem, file);
     }
     _loadTime = System.nanoTime() - s;
-    _length = length;
-    inputStream.close();
+  }
+
+  private void loadSheets(FileSystem fileSystem, Path file) throws IOException {
+    Path cachePath = getCachePath(file);
+    FileStatus[] listStatus = fileSystem.listStatus(cachePath, new PathFilter() {
+      @Override
+      public boolean accept(Path path) {
+        if (path.getName().startsWith("sheet.")) {
+          return true;
+        }
+        return false;
+      }
+    });
+    for (FileStatus fileStatus : listStatus) {
+      registerTable(LazyTable.create(fileSystem, fileStatus.getPath()));
+    }
+  }
+
+  private void registerTable(Table table) {
+    _tables.put(table.getName(), table);
+  }
+
+  private void buildCache(FileSystem fileSystem, Path file) throws IOException {
+    Path cachePath = getCachePath(file);
+    fileSystem.delete(cachePath, true);
+    try (FSDataInputStream inputStream = fileSystem.open(file)) {
+      XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+      for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+        XSSFSheet sheet = workbook.getSheetAt(i);
+        XSSFSheetTable tableXSSFSheet = getXSSFSheetTable(sheet);
+        writeTable(fileSystem, cachePath, tableXSSFSheet);
+      }
+      workbook.close();
+    }
+    FileStatus fileStatus = fileSystem.getFileStatus(file);
+    try (FSDataOutputStream outputStream = fileSystem.create(getSheetFsPath(cachePath))) {
+      fileStatus.write(outputStream);
+    }
+  }
+
+  private XSSFSheetTable getXSSFSheetTable(XSSFSheet sheet) {
+    String normalizeName = NormalizeName.normalizeName(sheet.getSheetName(), _tables.keySet());
+    XSSFSheetTable tableXSSFSheet = new XSSFSheetTable(normalizeName, sheet);
+    return tableXSSFSheet;
+  }
+
+  private Path getSheetFsPath(Path cachePath) {
+    return new Path(cachePath, "index.fs");
+  }
+
+  private Path getCachePath(Path file) {
+    return new Path(file.getParent(), "." + file.getName());
+  }
+
+  private void writeTable(FileSystem fileSystem, Path cacheDir, BaseTable table) throws IOException {
+    Path file = new Path(cacheDir, "sheet." + table.getName());
+    LOG.info("Writing cache table [" + file + "].");
+    try (FSDataOutputStream outputStream = fileSystem.create(file)) {
+      table.write(outputStream);
+    }
+  }
+
+  private void loadSheetsDirectly(FileSystem fileSystem, Path file) throws IOException {
+    try (FSDataInputStream inputStream = fileSystem.open(file)) {
+      XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+      for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+        XSSFSheet sheet = workbook.getSheetAt(i);
+        XSSFSheetTable tableXSSFSheet = getXSSFSheetTable(sheet);
+        registerTable(tableXSSFSheet);
+      }
+      workbook.close();
+    }
+  }
+
+  private boolean isCacheValid(FileStatus fileStatus, FileSystem fileSystem, Path file) throws IOException {
+    Path cachePath = getCachePath(file);
+    Path sheetFsPath = getSheetFsPath(cachePath);
+    if (!fileSystem.exists(sheetFsPath)) {
+      return false;
+    }
+    FileStatus onDiskFileStatus = new FileStatus();
+    try (FSDataInputStream inputStream = fileSystem.open(sheetFsPath)) {
+      onDiskFileStatus.readFields(inputStream);
+    }
+    return onDiskFileStatus.equals(fileStatus);
   }
 
   public long getLength() {

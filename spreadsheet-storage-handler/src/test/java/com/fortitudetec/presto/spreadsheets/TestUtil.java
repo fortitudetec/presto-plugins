@@ -26,17 +26,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 public class TestUtil {
-  
+
   public static final String SPREADSHEETS = "spreadsheets";
   public static final String PRESTO_EXAMPLE_XLSX = "Presto Example.xlsx";
 
-  public static Path setupTest(Configuration conf, String user, Class<SpreadsheetMetadataTest> clazz)
-      throws IOException {
+  public static Path setupTest(Configuration conf, String user, Class<?> clazz) throws IOException {
     return setupTest(conf, user, clazz, SPREADSHEETS);
   }
 
-  public static Path setupTest(Configuration conf, String user, Class<SpreadsheetMetadataTest> clazz,
-      String spreadsheetSubDir) throws IOException {
+  public static Path setupTest(Configuration conf, String user, Class<?> clazz, String spreadsheetSubDir)
+      throws IOException {
     Path projectPath = new Path("./target/tmp/" + clazz.getName());
     FileSystem fileSystem = projectPath.getFileSystem(conf);
     projectPath = projectPath.makeQualified(fileSystem.getUri(), fileSystem.getWorkingDirectory());

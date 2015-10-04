@@ -16,28 +16,11 @@
  */
 package com.fortitudetec.presto.spreadsheets.util;
 
-public enum TableType {
-  STRING(0), BOOLEAN(1), NUMBER(2), ERROR(3), BLANK(4);
-  public final int type;
+public class ConvertToAvro {
 
-  private TableType(int type) {
-    this.type = type;
+  public static void main(String[] args) {
+    
+    
   }
 
-  public static TableType lookup(int type) {
-    switch (type) {
-    case 0:
-      return STRING;
-    case 1:
-      return BOOLEAN;
-    case 2:
-      return NUMBER;
-    case 3:
-      return ERROR;
-    case 4:
-      return BLANK;
-    default:
-      throw new RuntimeException("Type [" + type + "] not found.");
-    }
-  }
 }

@@ -16,28 +16,30 @@
  */
 package com.fortitudetec.presto.spreadsheets.util;
 
-public enum TableType {
-  STRING(0), BOOLEAN(1), NUMBER(2), ERROR(3), BLANK(4);
-  public final int type;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-  private TableType(int type) {
-    this.type = type;
+import org.apache.hadoop.io.Writable;
+
+public class TableMetaDataWritable implements Writable {
+
+  public void setNumberOfRows(int numberOfRows) {
+    throw new RuntimeException("Not implemented.");
   }
 
-  public static TableType lookup(int type) {
-    switch (type) {
-    case 0:
-      return STRING;
-    case 1:
-      return BOOLEAN;
-    case 2:
-      return NUMBER;
-    case 3:
-      return ERROR;
-    case 4:
-      return BLANK;
-    default:
-      throw new RuntimeException("Type [" + type + "] not found.");
-    }
+  public void add(String columnName, int columnType) {
+    throw new RuntimeException("Not implemented.");
   }
+
+  @Override
+  public void write(DataOutput out) throws IOException {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  @Override
+  public void readFields(DataInput in) throws IOException {
+    throw new RuntimeException("Not implemented.");
+  }
+
 }

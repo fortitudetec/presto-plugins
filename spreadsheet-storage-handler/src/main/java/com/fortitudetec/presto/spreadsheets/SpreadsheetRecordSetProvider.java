@@ -31,9 +31,11 @@ import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 public class SpreadsheetRecordSetProvider implements ConnectorRecordSetProvider {
 
   private final Configuration _configuration;
+  private final boolean _useFileCache;
 
-  public SpreadsheetRecordSetProvider(Configuration configuration) {
+  public SpreadsheetRecordSetProvider(Configuration configuration, boolean useFileCache) {
     _configuration = configuration;
+    _useFileCache = useFileCache;
   }
 
   @Override
@@ -42,7 +44,7 @@ public class SpreadsheetRecordSetProvider implements ConnectorRecordSetProvider 
     SpreadsheetTableHandle spreadsheetTableHandle = spreadsheetSplit.getSpreadsheetTableHandle();
     SchemaTableName schemaTableName = spreadsheetTableHandle.getTableName();
     SpreadsheetReader spreadSheetHelper = SpreadsheetMetadata.getSpreadSheetHelper(session, spreadsheetTableHandle,
-        _configuration);
+        _configuration, _useFileCache);
     return new SpreadsheetRecordSet(schemaTableName.getTableName(), spreadSheetHelper, columns);
   }
 
