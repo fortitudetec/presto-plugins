@@ -140,7 +140,7 @@ under the License.
 	<modules>
 		<module>spreadsheet-storage-handler</module>
 		<module>zookeeper-storage-handler</module>
-		<module>pronto-storage-handler</module>
+		<!--module>pronto-storage-handler</module-->
 		<module>base-storage-handler</module>
 		<module>presto-csd</module>
 	</modules>
