@@ -16,7 +16,6 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.fortitudetec.presto.BaseHandleResolver;
@@ -32,10 +31,6 @@ public class SpreadsheetHandleResolver extends BaseHandleResolver {
     return SpreadsheetTableHandle.class;
   }
 
-  @Override
-  public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return SpreadsheetColumnHandle.class;
-  }
 
   @Override
   public Class<? extends ConnectorSplit> getSplitClass() {

@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto.zookeeper.command;
 
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import java.io.IOException;
+import java.util.List;
 
-public class ZooKeeperHandleResolver extends BaseHandleResolver {
+public abstract class BaseCommand {
+  
+  public abstract String command();
 
-  public ZooKeeperHandleResolver(String connectorId) {
-    super(connectorId);
-  }
+  public abstract String[] names();
 
-  @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return ZooKeeperTableHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return ZooKeeperSplit.class;
-  }
+  public abstract List<String[]> execute() throws IOException;
 
 }

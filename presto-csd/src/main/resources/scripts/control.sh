@@ -46,6 +46,7 @@ LOG
 }
 
 setup_etc() {
+  JAVA_HEAP=$1
   echo "setup_etc"
   if [ ! -d $PRESTO_ETC ]; then
     mkdir $PRESTO_ETC
@@ -73,6 +74,8 @@ NODE_PROP
     do
       echo ${JVM_CONFIG_ARRAY[$i]} >> $PRESTO_JVM_FILE
     done
+    echo "-Xmx$JAVA_HEAP" >> $PRESTO_JVM_FILE
+    echo "-Xms$JAVA_HEAP" >> $PRESTO_JVM_FILE
 
   else 
     echo "etc dir already exists."
@@ -87,6 +90,14 @@ containsElement() {
   return 1
 }
 
+createJMXCatalog() {
+  echo 'connector.name=jmx'>etc/catalog/jmx.properties
+}
+
+createCDHCatalogs() {
+  cat catalog.properties | java -jar $PRESTO_INSTALL/ft_json_to_catalog/presto-json-catalog-*.jar etc/catalog/
+}
+
 setup_environment() {
   echo "setup_environment"
   mkdir etc/catalog
@@ -94,10 +105,13 @@ setup_environment() {
 	echo "Could not create etc/catalog"
     exit 1
   fi
+
+  createJMXCatalog
+  createCDHCatalogs
+
   HADOOP_USER_NAME=presto hadoop fs -get catalog/* etc/catalog/
   if [ $? -ne 0 ]; then
 	echo "Could not copy catalog from HDFS to etc/catalog"
-    exit 1
   fi
 
   PARCEL_DIR=$PRESTO_INSTALL
@@ -158,7 +172,7 @@ setup_environment() {
 
 start_process() {
   echo "start_process"
-  setup_etc
+  setup_etc $1
   setup_environment
   echo "Starting presto process"
   exec sudo -u presto bin/launcher run -v --server-log-file=/var/log/presto/server.log
@@ -169,7 +183,7 @@ start_coordinator() {
   export PRESTO_PROCESS_TYPE="coordinator"
   create_dir $1
   create_dir $2
-  start_process
+  start_process $3
 }
 
 start_worker() {
@@ -177,7 +191,7 @@ start_worker() {
   export PRESTO_PROCESS_TYPE="worker"
   create_dir $1
   create_dir $2
-  start_process
+  start_process $3
 }
 
 create_dir() {
@@ -214,10 +228,10 @@ fi
 
 case ${action} in
   (start-coordinator)
-  	start_coordinator $2 $3
+  	start_coordinator $2 $3 $4
     ;;
   (start-worker)
-  	start_worker $2 $3
+  	start_worker $2 $3 $4
     ;;
   (create_dir)
     create_dir $2

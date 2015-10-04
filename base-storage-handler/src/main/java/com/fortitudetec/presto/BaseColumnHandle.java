@@ -18,13 +18,43 @@ package com.fortitudetec.presto;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.type.Type;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public interface BaseColumnHandle extends ColumnHandle {
+public class BaseColumnHandle implements ColumnHandle {
 
-  String getColumnName();
+  private final String _columnName;
+  private final Type _type;
+  private final String _connectorId;
 
-  Type getType();
-  
-  String getConnectorId();
+  @JsonCreator
+  public BaseColumnHandle(@JsonProperty("connectorId") String connectorId,
+      @JsonProperty("columnName") String columnName, @JsonProperty("type") Type type) {
+    _connectorId = connectorId;
+    _columnName = columnName;
+    _type = type;
+  }
+
+  @JsonProperty
+  public String getColumnName() {
+    return _columnName;
+  }
+
+  @JsonProperty
+  public Type getType() {
+    return _type;
+  }
+
+  @JsonProperty
+  public String getConnectorId() {
+    return _connectorId;
+  }
+
+  @Override
+  public String toString() {
+    return "BaseColumnHandle [_columnName=" + _columnName + ", _type=" + _type + ", _connectorId=" + _connectorId + "]";
+  }
+
+
 
 }

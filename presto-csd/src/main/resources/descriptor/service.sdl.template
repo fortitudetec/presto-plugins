@@ -31,10 +31,7 @@
     },
     {
       "name" : "HIVE"
-    },
-    {
-      "name" : "KAFKA"
-    },
+    }
   ],
   "commands":[
     {
@@ -103,7 +100,7 @@
       "jvmBased" : true,
       "startRunner" : {
         "program" : "scripts/control.sh",
-        "args" : [ "start-coordinator", "${node_data_dir}", "/var/log/presto" ],
+        "args" : [ "start-coordinator", "${node_data_dir}", "/var/log/presto", "${jvm_heap}" ],
         "environmentVariables" : {
         }
       },
@@ -117,7 +114,7 @@
       	  {
             "filename" : "config.properties",
             "configFormat" : "properties",
-            "excludedParams":["node_environment","node_data_dir","jvm_config"]
+            "excludedParams":["node_environment","node_data_dir","jvm_config","jvm_heap"]
           },
           {
             "filename" : "node.properties",
@@ -127,7 +124,7 @@
           {
             "filename" : "jvm.config",
             "configFormat" : "properties",
-            "includedParams":["jvm_config"]
+            "includedParams":["jvm_config","jvm_heap"]
           }
         ],
         "peerConfigGenerators":[
@@ -136,20 +133,38 @@
             "params":["http_server_http_port"],
             "roleName":"COORDINATOR"
           }
+        ],
+        "auxConfigGenerators" : [
+          {
+            "filename" : "catalog.properties"
+          }
         ]
       },
       "parameters": [
     {
       "configName": "jvm.config",
       "configurableInWizard": false,
-      "default": "-server -Xmx16G -Xms16G -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError",
+      "default": "-server -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError",
       "description": "Configure JVM options.",
       "label": "JVM Options",
       "name": "jvm_config",
       "required": true,
       "type": "string"
+    },
+    {
+      "name" : "jvm_heap",
+      "configName": "jvm.heap",
+      "label" : "Total Java Heap Sizes of Coordinator in Bytes",
+      "description" : "Memory available to the Coordinator. Passed to Java -Xmx. Measured in bytes.",
+      "required" : "true",
+      "type" : "memory",
+      "unit" : "bytes",
+      "min" : 2147483648,
+      "default" : 8589934592,
+      "scaleFactor" : 1.3,
+      "autoConfigShare" : 100
     }
-      ],
+        ],
       "commands":[
         {
           "name":"create_hdfs_presto_user",
@@ -174,7 +189,7 @@
      "jvmBased" : true,
      "startRunner" : {
        "program" : "scripts/control.sh",
-       "args" : [ "start-worker", "${node_data_dir}", "/var/log/presto" ],
+       "args" : [ "start-worker", "${node_data_dir}", "/var/log/presto", "${jvm_heap}" ],
        "environmentVariables" : {
        }
      },
@@ -189,7 +204,7 @@
       	  {
             "filename" : "config.properties",
             "configFormat" : "properties",
-            "excludedParams":["node_environment","node_data_dir","jvm_config"]
+            "excludedParams":["node_environment","node_data_dir","jvm_config","jvm_heap"]
           },
           {
             "filename" : "node.properties",
@@ -208,18 +223,36 @@
             "params":["http_server_http_port"],
             "roleName":"COORDINATOR"
           }
+        ],
+        "auxConfigGenerators" : [
+          {
+            "filename" : "catalog.properties"
+          }
         ]
       },
       "parameters": [
     {
       "configName": "jvm.config",
       "configurableInWizard": false,
-      "default": "-server -Xmx16G -Xms16G -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError",
+      "default": "-server -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError",
       "description": "Configure JVM options.",
       "label": "JVM Options",
       "name": "jvm_config",
       "required": true,
       "type": "string"
+    },
+    {
+      "name" : "jvm_heap",
+      "configName": "jvm.heap",
+      "label" : "Total Java Heap Sizes of Worker in Bytes",
+      "description" : "Memory available to the Worker. Passed to Java -Xmx. Measured in bytes.",
+      "required" : "true",
+      "type" : "memory",
+      "unit" : "bytes",
+      "min" : 2147483648,
+      "default" : 8589934592,
+      "scaleFactor" : 1.3,
+      "autoConfigShare" : 100
     }
       ],
       "commands":[]

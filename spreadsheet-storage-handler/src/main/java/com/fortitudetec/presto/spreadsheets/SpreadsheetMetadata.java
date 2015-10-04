@@ -41,6 +41,7 @@ import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.DoubleType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
+import com.fortitudetec.presto.BaseColumnHandle;
 import com.fortitudetec.presto.BaseReadOnlyConnectorMetadata;
 import com.fortitudetec.presto.spreadsheets.util.NormalizeName;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
@@ -107,7 +108,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     for (String columnName : columnNames) {
       TableType columnType = table.getType(columnName);
       Type type = getType(columnType);
-      builder.put(columnName, new SpreadsheetColumnHandle(_connectorId, columnName, type));
+      builder.put(columnName, new BaseColumnHandle(_connectorId, columnName, type));
     }
     return builder.build();
   }

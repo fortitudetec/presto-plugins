@@ -43,6 +43,7 @@ import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.type.BigintType;
 import com.facebook.presto.spi.type.VarbinaryType;
 import com.facebook.presto.spi.type.VarcharType;
+import com.fortitudetec.presto.BaseColumnHandle;
 import com.fortitudetec.presto.BaseReadOnlyConnectorMetadata;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -80,25 +81,25 @@ public class ZooKeeperMetadata extends BaseReadOnlyConnectorMetadata {
   @Override
   public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle) {
     Builder<String, ColumnHandle> builder = ImmutableMap.builder();
-    add(builder, new ZooKeeperColumnHandle(_connectorId, PATH, VarcharType.VARCHAR));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, DATA, VarbinaryType.VARBINARY));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, DATA_AS_STRING, VarcharType.VARCHAR));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, AVERSION, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, CTIME, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, CVERSION, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, CZXID, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, DATALENGTH, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, EPHEMERALOWNER, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, MTIME, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, MZXID, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, NUMCHILDREN, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, PZXID, BigintType.BIGINT));
-    add(builder, new ZooKeeperColumnHandle(_connectorId, VERSION, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, PATH, VarcharType.VARCHAR));
+    add(builder, new BaseColumnHandle(_connectorId, DATA, VarbinaryType.VARBINARY));
+    add(builder, new BaseColumnHandle(_connectorId, DATA_AS_STRING, VarcharType.VARCHAR));
+    add(builder, new BaseColumnHandle(_connectorId, AVERSION, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, CTIME, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, CVERSION, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, CZXID, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, DATALENGTH, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, EPHEMERALOWNER, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, MTIME, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, MZXID, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, NUMCHILDREN, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, PZXID, BigintType.BIGINT));
+    add(builder, new BaseColumnHandle(_connectorId, VERSION, BigintType.BIGINT));
     return builder.build();
   }
 
-  private void add(Builder<String, ColumnHandle> builder, ZooKeeperColumnHandle zooKeeperColumnHandle) {
-    builder.put(zooKeeperColumnHandle.getColumnName(), zooKeeperColumnHandle);
+  private void add(Builder<String, ColumnHandle> builder, BaseColumnHandle columnHandle) {
+    builder.put(columnHandle.getColumnName(), columnHandle);
   }
 
 }

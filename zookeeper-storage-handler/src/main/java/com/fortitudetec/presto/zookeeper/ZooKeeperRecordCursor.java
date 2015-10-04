@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.type.Type;
+import com.fortitudetec.presto.BaseColumnHandle;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -69,7 +70,7 @@ public class ZooKeeperRecordCursor implements RecordCursor {
   };
 
   private final ZooKeeper _zooKeeper;
-  private final List<ZooKeeperColumnHandle> _columnHandles;
+  private final List<BaseColumnHandle> _columnHandles;
   private final List<String> _pathList;
 
   private int _index = -1;
@@ -77,7 +78,7 @@ public class ZooKeeperRecordCursor implements RecordCursor {
   private byte[] _data;
   private boolean _fetched;
 
-  public ZooKeeperRecordCursor(List<ZooKeeperColumnHandle> columnHandles, String zkConnection, int sessionTimeout) {
+  public ZooKeeperRecordCursor(List<BaseColumnHandle> columnHandles, String zkConnection, int sessionTimeout) {
     _columnHandles = columnHandles;
     try {
       _zooKeeper = new ZooKeeper(zkConnection, sessionTimeout, NOTHING);
@@ -139,8 +140,8 @@ public class ZooKeeperRecordCursor implements RecordCursor {
 
   @Override
   public long getLong(int field) {
-    ZooKeeperColumnHandle zooKeeperColumnHandle = _columnHandles.get(field);
-    String columnName = zooKeeperColumnHandle.getColumnName();
+    BaseColumnHandle columnHandle = _columnHandles.get(field);
+    String columnName = columnHandle.getColumnName();
     return getValue(columnName);
   }
 
@@ -186,8 +187,8 @@ public class ZooKeeperRecordCursor implements RecordCursor {
 
   @Override
   public boolean isNull(int field) {
-    ZooKeeperColumnHandle zooKeeperColumnHandle = _columnHandles.get(field);
-    String columnName = zooKeeperColumnHandle.getColumnName();
+    BaseColumnHandle columnHandle = _columnHandles.get(field);
+    String columnName = columnHandle.getColumnName();
     if (columnName.equals(PATH)) {
       return false;
     } else if (columnName.equals(DATA) || columnName.equals(DATA_AS_STRING)) {
@@ -213,8 +214,8 @@ public class ZooKeeperRecordCursor implements RecordCursor {
 
   @Override
   public Slice getSlice(int field) {
-    ZooKeeperColumnHandle zooKeeperColumnHandle = _columnHandles.get(field);
-    String columnName = zooKeeperColumnHandle.getColumnName();
+    BaseColumnHandle columnHandle = _columnHandles.get(field);
+    String columnName = columnHandle.getColumnName();
     if (columnName.equals(PATH)) {
       return Slices.wrappedBuffer(toBytes(_pathList.get(_index)));
     } else if (columnName.equals(DATA)) {

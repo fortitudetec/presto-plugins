@@ -30,6 +30,11 @@ public abstract class BaseHandleResolver implements ConnectorHandleResolver {
   }
 
   @Override
+  public Class<? extends ColumnHandle> getColumnHandleClass() {
+    return BaseColumnHandle.class;
+  }
+
+  @Override
   public boolean canHandle(ConnectorTableHandle tableHandle) {
     if (tableHandle.getClass().equals(getTableHandleClass())) {
       BaseTableHandle baseTableHandle = (BaseTableHandle) tableHandle;

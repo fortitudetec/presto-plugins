@@ -20,6 +20,8 @@ import java.util.Map;
 
 import com.facebook.presto.spi.Connector;
 import com.facebook.presto.spi.ConnectorFactory;
+import com.facebook.presto.spi.PrestoException;
+import static com.facebook.presto.spi.StandardErrorCode.EXTERNAL;
 
 public class ZooKeeperConnectorFactory implements ConnectorFactory {
 
@@ -34,9 +36,17 @@ public class ZooKeeperConnectorFactory implements ConnectorFactory {
 
   @Override
   public Connector create(String connectorId, Map<String, String> config) {
-    String connection = config.get("connection");
-    int sessionTimeout = Integer.parseInt(config.get("sessionTimeout"));
+    String connection = getOrThrowExceptionIfNull(config, "connection");
+    String sessionTimoutStr = getOrThrowExceptionIfNull(config, "sessionTimeout");
+    int sessionTimeout = Integer.parseInt(sessionTimoutStr);
     return new ZooKeeperConnector(connectorId, connection, sessionTimeout);
   }
 
+  private String getOrThrowExceptionIfNull(Map<String, String> config, String name) {
+    String s = config.get(name);
+    if (s == null) {
+      throw new PrestoException(EXTERNAL, name + " missing in configuration");
+    }
+    return s;
+  }
 }

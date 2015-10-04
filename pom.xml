@@ -37,6 +37,7 @@ under the License.
 		<zookeeper.version>3.4.5-cdh5.4.5</zookeeper.version>
 		<parquet.version>1.6.0</parquet.version>
 		<spark-core.version>2.2</spark-core.version>
+		<avro.version>1.7.6-cdh5.4.7</avro.version>
 		<base-storage-handler.version>${presto.version}.1.0</base-storage-handler.version>
 	</properties>
 
@@ -101,6 +102,16 @@ under the License.
 				<groupId>org.apache.hadoop</groupId>
 				<artifactId>hadoop-client</artifactId>
 				<version>${hadoop-client.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro</artifactId>
+				<version>${avro.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro-ipc</artifactId>
+				<version>${avro.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.twitter</groupId>

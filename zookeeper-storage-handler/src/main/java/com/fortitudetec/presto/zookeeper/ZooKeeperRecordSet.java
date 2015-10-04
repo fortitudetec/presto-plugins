@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.RecordCursor;
+import com.fortitudetec.presto.BaseColumnHandle;
 import com.fortitudetec.presto.BaseRecordSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -27,16 +28,16 @@ import com.google.common.collect.ImmutableList.Builder;
 public class ZooKeeperRecordSet extends BaseRecordSet {
 
   private final String _zkConnection;
-  private final List<ZooKeeperColumnHandle> _columnHandles;
+  private final List<BaseColumnHandle> _columnHandles;
   private final int _sessionTimeout;
 
   public ZooKeeperRecordSet(String zkConnection, int sessionTimeout, List<? extends ColumnHandle> columnHandles) {
     super(columnHandles);
     _zkConnection = zkConnection;
     _sessionTimeout = sessionTimeout;
-    Builder<ZooKeeperColumnHandle> builder = ImmutableList.builder();
+    Builder<BaseColumnHandle> builder = ImmutableList.builder();
     for (ColumnHandle columnHandle : columnHandles) {
-      builder.add((ZooKeeperColumnHandle) columnHandle);
+      builder.add((BaseColumnHandle) columnHandle);
     }
     _columnHandles = builder.build();
   }

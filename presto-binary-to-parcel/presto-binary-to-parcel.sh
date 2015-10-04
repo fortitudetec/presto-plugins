@@ -5,6 +5,10 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+
+
+
+
 PRESTO_TAR_FILE=$1
 TMP_VAR=`echo $PRESTO_TAR_FILE | sed -e 's/\.tar\.gz//g'`
 IFS='-' read -a array <<< "$TMP_VAR"
@@ -13,6 +17,11 @@ echo "Presto version for binary is $PRESTO_VERSION"
 
 PROJECT_DIR=`dirname "$0"`
 PROJECT_DIR=`cd "$PROJECT_DIR"; pwd`
+
+PJSON2CAT=$PROJECT_DIR/presto-json-catalog/
+cd $PJSON2CAT
+mvn clean install
+cd $PROJECT_DIR
 
 PROJECT_DIR_TMP=$PROJECT_DIR/tmp
 
@@ -76,6 +85,10 @@ echo "**** DONE."
 PRESTO_SCRIPT
 
 PARCEL_FILE="$PROJECT_DIR/PRESTO-$PRESTO_VERSION.parcel"
+
+mkdir $PRESTO_DIR/ft_json_to_catalog
+
+cp $PJSON2CAT/target/presto-json-catalog-*.jar $PRESTO_DIR/ft_json_to_catalog
 
 if [ -f $PARCEL_FILE ]; then
   echo "Removing old parcel file $PARCEL_FILE"

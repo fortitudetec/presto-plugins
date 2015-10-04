@@ -16,7 +16,7 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import static com.facebook.presto.spi.StandardErrorCode.*;
+import static com.facebook.presto.spi.StandardErrorCode.NOT_SUPPORTED;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 
@@ -25,12 +25,13 @@ import java.util.List;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.type.Type;
+import com.fortitudetec.presto.BaseColumnHandle;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 import com.fortitudetec.presto.spreadsheets.util.Table;
 
 public class SpreadsheetRecordCursor implements RecordCursor {
 
-  private final List<SpreadsheetColumnHandle> _columns;
+  private final List<BaseColumnHandle> _columns;
   private final List<Type> _types;
   private final long _totalBytes;
   private final long _loadTime;
@@ -40,7 +41,7 @@ public class SpreadsheetRecordCursor implements RecordCursor {
   private int _currentRow = -1;
 
   public SpreadsheetRecordCursor(String tableName, SpreadsheetReader spreadSheetHelper,
-      List<SpreadsheetColumnHandle> columns, List<Type> types) {
+      List<BaseColumnHandle> columns, List<Type> types) {
     _columns = columns;
     _types = types;
     _totalBytes = spreadSheetHelper.getLength();
@@ -62,15 +63,15 @@ public class SpreadsheetRecordCursor implements RecordCursor {
 
   @Override
   public boolean isNull(int field) {
-    SpreadsheetColumnHandle spreadsheetColumnHandle = _columns.get(field);
-    String columnName = spreadsheetColumnHandle.getColumnName();
+    BaseColumnHandle columnHandle = _columns.get(field);
+    String columnName = columnHandle.getColumnName();
     return _table.isNull(_currentRow, columnName);
   }
 
   @Override
   public boolean getBoolean(int field) {
-    SpreadsheetColumnHandle spreadsheetColumnHandle = _columns.get(field);
-    String columnName = spreadsheetColumnHandle.getColumnName();
+    BaseColumnHandle columnHandle = _columns.get(field);
+    String columnName = columnHandle.getColumnName();
     return _table.getBoolean(_currentRow, columnName);
   }
 
@@ -81,15 +82,15 @@ public class SpreadsheetRecordCursor implements RecordCursor {
 
   @Override
   public double getDouble(int field) {
-    SpreadsheetColumnHandle spreadsheetColumnHandle = _columns.get(field);
-    String columnName = spreadsheetColumnHandle.getColumnName();
+    BaseColumnHandle columnHandle = _columns.get(field);
+    String columnName = columnHandle.getColumnName();
     return _table.getDouble(_currentRow, columnName);
   }
 
   @Override
   public Slice getSlice(int field) {
-    SpreadsheetColumnHandle spreadsheetColumnHandle = _columns.get(field);
-    String columnName = spreadsheetColumnHandle.getColumnName();
+    BaseColumnHandle columnHandle = _columns.get(field);
+    String columnName = columnHandle.getColumnName();
     String s = _table.getString(_currentRow, columnName);
     return Slices.wrappedBuffer(s.getBytes());
   }
