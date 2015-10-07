@@ -39,6 +39,7 @@ under the License.
 		<spark-core.version>2.2</spark-core.version>
 		<avro.version>1.7.6-cdh5.4.7</avro.version>
 		<base-storage-handler.version>${presto.version}.1.0</base-storage-handler.version>
+		<blur.version>h.2.6.0.b.0.3.0.incubating</blur.version>
 	</properties>
 
 	<dependencyManagement>
@@ -52,6 +53,11 @@ under the License.
 				<groupId>com.facebook.presto</groupId>
 				<artifactId>presto-tests</artifactId>
 				<version>${presto.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.blur</groupId>
+				<artifactId>blur-core</artifactId>
+				<version>${blur.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.facebook.presto</groupId>
@@ -140,8 +146,8 @@ under the License.
 	<modules>
 		<module>spreadsheet-storage-handler</module>
 		<module>zookeeper-storage-handler</module>
-		<!--module>pronto-storage-handler</module-->
 		<module>base-storage-handler</module>
+		<module>blur-storage-handler</module>
 		<module>presto-csd</module>
 	</modules>
 

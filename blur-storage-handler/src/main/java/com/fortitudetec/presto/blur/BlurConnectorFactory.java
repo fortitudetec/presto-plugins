@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto.blur;
 
 import java.util.Map;
 
@@ -22,15 +22,14 @@ import com.facebook.presto.spi.Connector;
 import com.facebook.presto.spi.ConnectorFactory;
 import com.fortitudetec.presto.ConfigHelper;
 
-public class ZooKeeperConnectorFactory implements ConnectorFactory {
+public class BlurConnectorFactory implements ConnectorFactory {
 
-  public ZooKeeperConnectorFactory(ClassLoader classLoader) {
-
+  public BlurConnectorFactory(ClassLoader classLoader) {
   }
-
+  
   @Override
   public String getName() {
-    return "zookeeper";
+    return "blur";
   }
 
   @Override
@@ -38,7 +37,7 @@ public class ZooKeeperConnectorFactory implements ConnectorFactory {
     String connection = ConfigHelper.getOrThrowExceptionIfNull(config, "connection");
     String sessionTimoutStr = ConfigHelper.getOrThrowExceptionIfNull(config, "sessionTimeout");
     int sessionTimeout = Integer.parseInt(sessionTimoutStr);
-    return new ZooKeeperConnector(connectorId, connection, sessionTimeout);
+    return new BlurConnector(connectorId, connection, sessionTimeout);
   }
 
 }

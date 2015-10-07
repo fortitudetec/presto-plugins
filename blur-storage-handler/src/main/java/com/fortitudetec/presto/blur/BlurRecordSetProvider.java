@@ -14,31 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto.blur;
 
-import java.util.Map;
+import java.util.List;
 
-import com.facebook.presto.spi.Connector;
-import com.facebook.presto.spi.ConnectorFactory;
-import com.fortitudetec.presto.ConfigHelper;
+import org.apache.blur.thrift.generated.Blur.Iface;
 
-public class ZooKeeperConnectorFactory implements ConnectorFactory {
+import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ConnectorRecordSetProvider;
+import com.facebook.presto.spi.ConnectorSession;
+import com.facebook.presto.spi.ConnectorSplit;
+import com.facebook.presto.spi.RecordSet;
 
-  public ZooKeeperConnectorFactory(ClassLoader classLoader) {
+public class BlurRecordSetProvider implements ConnectorRecordSetProvider {
 
+  private final Iface _client;
+
+  public BlurRecordSetProvider(String connectorId, Iface client) {
+    _client = client;
   }
 
   @Override
-  public String getName() {
-    return "zookeeper";
-  }
-
-  @Override
-  public Connector create(String connectorId, Map<String, String> config) {
-    String connection = ConfigHelper.getOrThrowExceptionIfNull(config, "connection");
-    String sessionTimoutStr = ConfigHelper.getOrThrowExceptionIfNull(config, "sessionTimeout");
-    int sessionTimeout = Integer.parseInt(sessionTimoutStr);
-    return new ZooKeeperConnector(connectorId, connection, sessionTimeout);
+  public RecordSet getRecordSet(ConnectorSession session, ConnectorSplit split, List<? extends ColumnHandle> columns) {
+    return new BlurRecordSet(columns,_client);
   }
 
 }

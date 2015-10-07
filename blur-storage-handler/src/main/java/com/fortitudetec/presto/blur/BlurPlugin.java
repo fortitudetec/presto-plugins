@@ -14,31 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto.blur;
 
-import java.util.Map;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
-import com.facebook.presto.spi.Connector;
+import java.util.List;
+
 import com.facebook.presto.spi.ConnectorFactory;
-import com.fortitudetec.presto.ConfigHelper;
+import com.facebook.presto.spi.Plugin;
+import com.google.common.collect.ImmutableList;
 
-public class ZooKeeperConnectorFactory implements ConnectorFactory {
-
-  public ZooKeeperConnectorFactory(ClassLoader classLoader) {
-
-  }
+public class BlurPlugin implements Plugin {
 
   @Override
-  public String getName() {
-    return "zookeeper";
+  public <T> List<T> getServices(Class<T> type) {
+    if (type == ConnectorFactory.class) {
+      return ImmutableList.of(type.cast(new BlurConnectorFactory(getClassLoader())));
+    }
+    return ImmutableList.of();
   }
 
-  @Override
-  public Connector create(String connectorId, Map<String, String> config) {
-    String connection = ConfigHelper.getOrThrowExceptionIfNull(config, "connection");
-    String sessionTimoutStr = ConfigHelper.getOrThrowExceptionIfNull(config, "sessionTimeout");
-    int sessionTimeout = Integer.parseInt(sessionTimoutStr);
-    return new ZooKeeperConnector(connectorId, connection, sessionTimeout);
+  private static ClassLoader getClassLoader() {
+    return firstNonNull(Thread.currentThread().getContextClassLoader(), BlurPlugin.class.getClassLoader());
   }
-
 }

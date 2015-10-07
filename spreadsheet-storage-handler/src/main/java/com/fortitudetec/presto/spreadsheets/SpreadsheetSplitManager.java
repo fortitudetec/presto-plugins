@@ -18,32 +18,21 @@ package com.fortitudetec.presto.spreadsheets;
 
 import java.util.List;
 
-import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorPartition;
-import com.facebook.presto.spi.ConnectorPartitionResult;
 import com.facebook.presto.spi.ConnectorSession;
-import com.facebook.presto.spi.ConnectorSplitManager;
 import com.facebook.presto.spi.ConnectorSplitSource;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.FixedSplitSource;
-import com.facebook.presto.spi.TupleDomain;
+import com.fortitudetec.presto.BaseConnectorSplitManager;
 import com.google.common.collect.ImmutableList;
 
 @SuppressWarnings("deprecation")
-public class SpreadsheetSplitManager implements ConnectorSplitManager {
+public class SpreadsheetSplitManager extends BaseConnectorSplitManager {
 
   private final String _connectorId;
 
   public SpreadsheetSplitManager(String connectorId) {
     _connectorId = connectorId;
-  }
-
-  @Override
-  public ConnectorPartitionResult getPartitions(ConnectorSession session, ConnectorTableHandle table,
-      TupleDomain<ColumnHandle> tupleDomain) {
-    SpreadsheetTableHandle spreadsheetTableHandle = (SpreadsheetTableHandle) table;
-    return new ConnectorPartitionResult(ImmutableList.<ConnectorPartition> of(new SpreadsheetPartition(
-        spreadsheetTableHandle, tupleDomain)), tupleDomain);
   }
 
   @Override

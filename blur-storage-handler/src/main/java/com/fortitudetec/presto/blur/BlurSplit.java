@@ -14,32 +14,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto.blur;
 
 import java.util.List;
 
-import com.facebook.presto.spi.ConnectorPartition;
-import com.facebook.presto.spi.ConnectorSession;
-import com.facebook.presto.spi.ConnectorSplitSource;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.facebook.presto.spi.FixedSplitSource;
-import com.fortitudetec.presto.BaseConnectorSplitManager;
+import com.facebook.presto.spi.HostAddress;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fortitudetec.presto.BaseSplit;
 import com.google.common.collect.ImmutableList;
 
-@SuppressWarnings("deprecation")
-public class ZooKeeperSplitManager extends BaseConnectorSplitManager {
+public class BlurSplit implements BaseSplit {
 
   private final String _connectorId;
-
-  public ZooKeeperSplitManager(String connectorId) {
+  private final BlurTableHandle _tableHandle;
+  
+  public BlurSplit(@JsonProperty("connectorId") String connectorId,
+      @JsonProperty("tableHandle") BlurTableHandle tableHandle) {
     _connectorId = connectorId;
+    _tableHandle = tableHandle;
+  }
+
+  @JsonProperty
+  public String getConnectorId() {
+    return _connectorId;
+  }
+
+  @JsonProperty
+  public BlurTableHandle getTableHandle() {
+    return _tableHandle;
   }
 
   @Override
-  public ConnectorSplitSource getPartitionSplits(ConnectorSession session, ConnectorTableHandle table,
-      List<ConnectorPartition> partitions) {
-    ZooKeeperTableHandle tableHandle = (ZooKeeperTableHandle) table;
-    ZooKeeperSplit spreadsheetSplit = new ZooKeeperSplit(_connectorId, tableHandle);
-    return new FixedSplitSource(_connectorId, ImmutableList.of(spreadsheetSplit));
+  public boolean isRemotelyAccessible() {
+    return true;
+  }
+
+  @Override
+  public List<HostAddress> getAddresses() {
+    return ImmutableList.of();
+  }
+
+  @Override
+  public Object getInfo() {
+    return this;
   }
 }

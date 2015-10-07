@@ -14,31 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto.blur;
 
-import java.util.Map;
+import com.facebook.presto.spi.ConnectorSplit;
+import com.facebook.presto.spi.ConnectorTableHandle;
+import com.fortitudetec.presto.BaseHandleResolver;
 
-import com.facebook.presto.spi.Connector;
-import com.facebook.presto.spi.ConnectorFactory;
-import com.fortitudetec.presto.ConfigHelper;
+public class BlurHandleResolver extends BaseHandleResolver {
 
-public class ZooKeeperConnectorFactory implements ConnectorFactory {
-
-  public ZooKeeperConnectorFactory(ClassLoader classLoader) {
-
+  public BlurHandleResolver(String connectorId) {
+    super(connectorId);
   }
 
   @Override
-  public String getName() {
-    return "zookeeper";
+  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
+    return BlurTableHandle.class;
   }
 
   @Override
-  public Connector create(String connectorId, Map<String, String> config) {
-    String connection = ConfigHelper.getOrThrowExceptionIfNull(config, "connection");
-    String sessionTimoutStr = ConfigHelper.getOrThrowExceptionIfNull(config, "sessionTimeout");
-    int sessionTimeout = Integer.parseInt(sessionTimoutStr);
-    return new ZooKeeperConnector(connectorId, connection, sessionTimeout);
+  public Class<? extends ConnectorSplit> getSplitClass() {
+    return BlurSplit.class;
   }
 
 }

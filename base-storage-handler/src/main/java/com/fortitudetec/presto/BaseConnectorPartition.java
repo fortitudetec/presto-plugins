@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto;
 
-import java.util.List;
-
+import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorPartition;
-import com.facebook.presto.spi.ConnectorSession;
-import com.facebook.presto.spi.ConnectorSplitSource;
 import com.facebook.presto.spi.ConnectorTableHandle;
-import com.facebook.presto.spi.FixedSplitSource;
-import com.fortitudetec.presto.BaseConnectorSplitManager;
-import com.google.common.collect.ImmutableList;
+import com.facebook.presto.spi.TupleDomain;
 
 @SuppressWarnings("deprecation")
-public class ZooKeeperSplitManager extends BaseConnectorSplitManager {
+public class BaseConnectorPartition implements ConnectorPartition {
 
-  private final String _connectorId;
+  private final TupleDomain<ColumnHandle> _tupleDomain;
+  private final String _partitionId;
 
-  public ZooKeeperSplitManager(String connectorId) {
-    _connectorId = connectorId;
+  public BaseConnectorPartition(ConnectorTableHandle tableHandle, TupleDomain<ColumnHandle> tupleDomain) {
+    _tupleDomain = tupleDomain;
+    _partitionId = tableHandle.toString();
   }
 
   @Override
-  public ConnectorSplitSource getPartitionSplits(ConnectorSession session, ConnectorTableHandle table,
-      List<ConnectorPartition> partitions) {
-    ZooKeeperTableHandle tableHandle = (ZooKeeperTableHandle) table;
-    ZooKeeperSplit spreadsheetSplit = new ZooKeeperSplit(_connectorId, tableHandle);
-    return new FixedSplitSource(_connectorId, ImmutableList.of(spreadsheetSplit));
+  public String getPartitionId() {
+    return _partitionId;
   }
+
+  @Override
+  public TupleDomain<ColumnHandle> getTupleDomain() {
+    return _tupleDomain;
+  }
+
 }
