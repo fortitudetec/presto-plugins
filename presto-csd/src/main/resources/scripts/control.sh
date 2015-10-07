@@ -74,9 +74,12 @@ NODE_PROP
     do
       echo ${JVM_CONFIG_ARRAY[$i]} >> $PRESTO_JVM_FILE
     done
+    JVM_OPTS="${JVM_CONFIG}"
     echo "-Xmx$JAVA_HEAP" >> $PRESTO_JVM_FILE
+    JVM_OPTS="-Xmx$JAVA_HEAP ${JVM_OPTS}"
     echo "-Xms$JAVA_HEAP" >> $PRESTO_JVM_FILE
-
+    JVM_OPTS="-Xms$JAVA_HEAP ${JVM_OPTS}"
+    export JVM_OPTS
   else 
     echo "etc dir already exists."
   fi
@@ -95,7 +98,9 @@ createJMXCatalog() {
 }
 
 createCDHCatalogs() {
-  cat catalog.properties | java -jar $PRESTO_INSTALL/ft_json_to_catalog/presto-json-catalog-*.jar etc/catalog/
+  if [ -s catalog.properties ]; then
+    cat catalog.properties | java -jar $PRESTO_INSTALL/ft_json_to_catalog/presto-json-catalog-*.jar etc/catalog/
+  fi
 }
 
 setup_environment() {
@@ -167,7 +172,7 @@ setup_environment() {
     exit 1
   fi
 
-  chown -R presto:presto .
+  # chown -R presto:presto .
 }
 
 start_process() {
@@ -175,7 +180,23 @@ start_process() {
   setup_etc $1
   setup_environment
   echo "Starting presto process"
-  exec sudo -u presto bin/launcher run -v --server-log-file=/var/log/presto/server.log
+
+  PRESTO_DATA_DIR=$2
+  PRESTO_ENVIRONMENT=$3
+
+  # Hack because presto needs root to setup dirs and stacks dir in log dir is owned by root
+  # chown -R presto:presto /var/log/presto/stacks
+
+  exec java -cp lib/\* $JAVA_OPTS \
+-Dlog.output-file=/var/log/presto/server.log \
+-Dnode.data-dir=$PRESTO_DATA_DIR \
+-Dnode.id=$PRESTO_NODE_ID \
+-Dnode.environment=$PRESTO_ENVIRONMENT \
+-Dlog.enable-console=false \
+-Dlog.levels-file=etc/log.properties \
+-Dconfig=etc/config.properties \
+com.facebook.presto.server.PrestoServer
+
 }
 
 start_coordinator() {
@@ -183,7 +204,7 @@ start_coordinator() {
   export PRESTO_PROCESS_TYPE="coordinator"
   create_dir $1
   create_dir $2
-  start_process $3
+  start_process $3 $1 $4
 }
 
 start_worker() {
@@ -191,33 +212,27 @@ start_worker() {
   export PRESTO_PROCESS_TYPE="worker"
   create_dir $1
   create_dir $2
-  start_process $3
+  start_process $3 $1 $4
 }
 
 create_dir() {
-  echo "create_dir $1"
+   echo "create_dir $1"
   NEW_DIR=$1
   if [ ! -d $NEW_DIR ]; then
     mkdir -p $NEW_DIR
     if [ $? -ne 0 ]; then
-	  echo "Could not create $NEW_DIR"
+  	  echo "Could not create $NEW_DIR"
       exit 1
     fi
-    chown -R presto:presto $NEW_DIR
-    if [ $? -ne 0 ]; then
-      echo "Could not change owner of $NEW_DIR to presto:presto"
-      exit 1
-    fi
+    # chown -R presto:presto $NEW_DIR
+    # if [ $? -ne 0 ]; then
+    #   echo "Could not change owner of $NEW_DIR to presto:presto"
+    #   exit 1
+    # fi
     echo "Dir [$NEW_DIR] created."
   else 
     echo "Dir [$NEW_DIR] already exists."
   fi
-}
-
-create_hdfs_dir() {
-  NEW_DIR=$1
-  HADOOP_USER_NAME=hdfs hadoop fs -mkdir $NEW_DIR
-  HADOOP_USER_NAME=hdfs hadoop fs -chown -R presto:presto $NEW_DIR
 }
 
 action="$1"
@@ -228,17 +243,11 @@ fi
 
 case ${action} in
   (start-coordinator)
-  	start_coordinator $2 $3 $4
+  	start_coordinator $2 $3 $4 $5
     ;;
   (start-worker)
-  	start_worker $2 $3 $4
-    ;;
-  (create_dir)
-    create_dir $2
-    ;;
-  (create_hdfs_dir)
-    create_hdfs_dir $2
-    ;;    
+  	start_worker $2 $3 $4 $5
+    ;; 
   (*)
     echo "Unknown command[${action}]"
     ;;

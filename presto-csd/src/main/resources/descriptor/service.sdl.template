@@ -5,21 +5,14 @@
   "version" : "|||PRESTO_CSD_VERSION|||",
   "icon":"images/icon.png",
   "runAs" : {
-    "user"  : "root",
-    "group" : "root"
+    "user"  : "presto",
+    "group" : "presto"
   },
   "rolesWithExternalLinks":["COORDINATOR","WORKER"],
   "hdfsDirs" : [],
   "parcel" : {
     "requiredTags" : [ "PRESTOCOORDINATOR", "PRESTOWORKER" ],
     "optionalTags" : [ "PRESTO-PLUGIN" ]   
-  },
-  "serviceInit": {
-    "preStartSteps":[
-      {
-        "commandName":"create_hdfs_presto_user"
-      }
-    ]
   },
   "serviceDependencies" : [
     {
@@ -32,17 +25,7 @@
     {
       "name" : "HIVE"
     }
-  ],
-  "commands":[
-    {
-      "name":"create_hdfs_presto_user",
-      "label":"Create presto user directory",
-      "description":"Create presto user directory",
-      "roleName":"COORDINATOR",
-      "roleCommand":"create_hdfs_presto_user",
-      "runMode":"all"
-    }
-  ],  
+  ], 
   "parameters": [
     {
       "configName": "node.environment",
@@ -63,7 +46,8 @@
       "name": "node_data_dir",
       "required": true,
       "type": "path",
-      "pathType": "localDataDir"
+      "pathType": "localDataDir",
+      "mode": "0755"
     },
     {
       "configName": "http-server.http.port",
@@ -96,11 +80,16 @@
       "topology":{
         "minInstances":1,
         "maxInstances":1
-      },      
+      },
+      "logging" : {
+        "dir" : "/var/log/presto",
+        "filename" : "server.log",
+        "loggingType" : "other"
+      },
       "jvmBased" : true,
       "startRunner" : {
         "program" : "scripts/control.sh",
-        "args" : [ "start-coordinator", "${node_data_dir}", "/var/log/presto", "${jvm_heap}" ],
+        "args" : [ "start-coordinator", "${node_data_dir}", "/var/log/presto", "${jvm_heap}", "${node_environment}" ],
         "environmentVariables" : {
         }
       },
@@ -114,7 +103,7 @@
       	  {
             "filename" : "config.properties",
             "configFormat" : "properties",
-            "excludedParams":["node_environment","node_data_dir","jvm_config","jvm_heap"]
+            "excludedParams":["node_environment","node_data_dir", "jvm_config", "jvm_heap", "log_dir"]
           },
           {
             "filename" : "node.properties",
@@ -164,20 +153,7 @@
       "scaleFactor" : 1.3,
       "autoConfigShare" : 100
     }
-        ],
-      "commands":[
-        {
-          "name":"create_hdfs_presto_user",
-          "label":"Coordinator - Create presto user directory",
-          "description":"Coordinator - Create presto user directory",
-          "expectedExitCodes": [0],
-          "requiredRoleState": "stopped",
-          "commandRunner": {
-            "program":"scripts/control.sh",
-            "args":["create_hdfs_dir","/user/presto"]
-          }
-        }
-      ]
+        ]
    },
    {
      "name" : "WORKER",
@@ -186,10 +162,15 @@
      "topology":{
        "minInstances":0
      },
+    "logging" : {
+      "dir" : "/var/log/presto",
+      "filename" : "server.log",
+      "loggingType" : "other"
+     },
      "jvmBased" : true,
      "startRunner" : {
        "program" : "scripts/control.sh",
-       "args" : [ "start-worker", "${node_data_dir}", "/var/log/presto", "${jvm_heap}" ],
+       "args" : [ "start-worker", "${node_data_dir}", "/var/log/presto", "${jvm_heap}", "${node_environment}" ],
        "environmentVariables" : {
        }
      },
@@ -204,7 +185,7 @@
       	  {
             "filename" : "config.properties",
             "configFormat" : "properties",
-            "excludedParams":["node_environment","node_data_dir","jvm_config","jvm_heap"]
+            "excludedParams":["node_environment","node_data_dir", "jvm_config", "jvm_heap", "log_dir"]
           },
           {
             "filename" : "node.properties",
@@ -254,9 +235,8 @@
       "scaleFactor" : 1.3,
       "autoConfigShare" : 100
     }
-      ],
-      "commands":[]
+      ]
     }   
-  ],
+  ]
 }
 

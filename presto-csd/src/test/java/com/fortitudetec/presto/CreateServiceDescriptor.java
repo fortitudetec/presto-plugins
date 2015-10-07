@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,7 +151,22 @@ public class CreateServiceDescriptor {
       reader.close();
     }
     {
-      JSONObject jsonObject = new JSONObject(swriter.toString());
+      String s = swriter.toString();
+      JSONObject jsonObject;
+      try {
+        jsonObject = new JSONObject(s);
+      } catch (JSONException e) {
+        BufferedReader reader = new BufferedReader(new StringReader(s));
+        String line;
+        int lineNum = 0;
+        int charCount = 0;
+        while ((line = reader.readLine()) != null) {
+          System.out.println(lineNum + "," + charCount + ": " + line);
+          lineNum++;
+          charCount += line.length() + 1;
+        }
+        throw e;
+      }
       PrintWriter writer = new PrintWriter(outputPath);
       writer.print(jsonObject.toString(1));
       writer.close();
