@@ -42,7 +42,7 @@ This will produce a new shema of `presto_example_xlsx` with two tables:
 
 ###### Connect with Presto CLI
 
-    java -jar presto-cli-0.115-executable.jar --catalog spreadsheet --user user1
+    java -jar presto-cli-*-executable.jar --catalog spreadsheet --user user1
 
 ###### Show Schemas
 
