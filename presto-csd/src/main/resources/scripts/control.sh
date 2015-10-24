@@ -184,9 +184,6 @@ start_process() {
   PRESTO_DATA_DIR=$2
   PRESTO_ENVIRONMENT=$3
 
-  # Hack because presto needs root to setup dirs and stacks dir in log dir is owned by root
-  # chown -R presto:presto /var/log/presto/stacks
-
   exec java -cp lib/\* $JAVA_OPTS \
 -Dlog.output-file=/var/log/presto/server.log \
 -Dnode.data-dir=$PRESTO_DATA_DIR \
@@ -224,11 +221,6 @@ create_dir() {
   	  echo "Could not create $NEW_DIR"
       exit 1
     fi
-    # chown -R presto:presto $NEW_DIR
-    # if [ $? -ne 0 ]; then
-    #   echo "Could not change owner of $NEW_DIR to presto:presto"
-    #   exit 1
-    # fi
     echo "Dir [$NEW_DIR] created."
   else 
     echo "Dir [$NEW_DIR] already exists."

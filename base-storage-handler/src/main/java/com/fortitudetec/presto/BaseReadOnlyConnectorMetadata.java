@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
@@ -31,15 +33,63 @@ import com.facebook.presto.spi.ConnectorMetadata;
 import com.facebook.presto.spi.ConnectorOutputTableHandle;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
+import com.facebook.presto.spi.ConnectorTableLayout;
+import com.facebook.presto.spi.ConnectorTableLayoutHandle;
+import com.facebook.presto.spi.ConnectorTableLayoutResult;
 import com.facebook.presto.spi.ConnectorTableMetadata;
+import com.facebook.presto.spi.ConnectorViewDefinition;
+import com.facebook.presto.spi.Constraint;
+import com.facebook.presto.spi.LocalProperty;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
+import com.facebook.presto.spi.TupleDomain;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 
 public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata {
+
+  protected final String _connectorId;
+
+  public BaseReadOnlyConnectorMetadata(String connectorId) {
+    _connectorId = connectorId;
+  }
+
+  @Override
+  public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName) {
+    return new BaseTableHandle(_connectorId, tableName);
+  }
+
+  @Override
+  public List<ConnectorTableLayoutResult> getTableLayouts(ConnectorSession session, ConnectorTableHandle table,
+      Constraint<ColumnHandle> constraint, Optional<Set<ColumnHandle>> desiredColumns) {
+    BaseTableHandle tableHandle = (BaseTableHandle) table;
+    BaseTableLayoutHandle baseTableLayoutHandle = createTableLayoutHandle(tableHandle);
+    ConnectorTableLayoutHandle handle = baseTableLayoutHandle;
+    Optional<List<ColumnHandle>> columns = Optional.empty();
+    TupleDomain<ColumnHandle> predicate = TupleDomain.all();
+    Optional<Set<ColumnHandle>> partitioningColumns = Optional.empty();
+    Optional<List<TupleDomain<ColumnHandle>>> discretePredicates = Optional.empty();
+    List<LocalProperty<ColumnHandle>> localProperties = ImmutableList.of();
+    ConnectorTableLayout layout = new ConnectorTableLayout(handle, columns, predicate, partitioningColumns,
+        discretePredicates, localProperties);
+    return ImmutableList.of(new ConnectorTableLayoutResult(layout, constraint.getSummary()));
+  }
+
+  protected BaseTableLayoutHandle createTableLayoutHandle(BaseTableHandle tableHandle) {
+    BaseTableLayoutHandle baseTableLayoutHandle = new BaseTableLayoutHandle(tableHandle);
+    return baseTableLayoutHandle;
+  }
+
+  @Override
+  public ConnectorTableLayout getTableLayout(ConnectorSession session, ConnectorTableLayoutHandle handle) {
+    BaseTableLayoutHandle layout = (BaseTableLayoutHandle) handle;
+    List<ConnectorTableLayoutResult> tableLayouts = getTableLayouts(session, layout.getTable(),
+        Constraint.<ColumnHandle> alwaysTrue(), Optional.empty());
+    ConnectorTableLayoutResult connectorTableLayoutResult = tableLayouts.get(0);
+    return connectorTableLayoutResult.getTableLayout();
+  }
 
   @Override
   public ColumnMetadata getColumnMetadata(ConnectorSession session, ConnectorTableHandle tableHandle,
@@ -144,7 +194,7 @@ public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata
   }
 
   @Override
-  public Map<SchemaTableName, String> getViews(ConnectorSession session, SchemaTablePrefix prefix) {
+  public Map<SchemaTableName, ConnectorViewDefinition> getViews(ConnectorSession session, SchemaTablePrefix prefix) {
     return ImmutableMap.of();
   }
 

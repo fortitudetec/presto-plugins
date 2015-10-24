@@ -14,26 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets;
+package com.fortitudetec.presto.zookeeper;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fortitudetec.presto.BaseSplit;
+import static io.airlift.testing.Closeables.closeAllRuntimeException;
 
-public class SpreadsheetSplit extends BaseSplit {
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.Test;
 
-  public SpreadsheetSplit(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("spreadsheetTableHandle") SpreadsheetTableHandle spreadsheetTableHandle) {
-    super(connectorId, spreadsheetTableHandle);
+import com.facebook.presto.tests.AbstractTestQueries;
+
+@Test
+public class TestZooKeeperDistributedQueries extends AbstractTestQueries {
+
+  private final ZooKeeperQueryRunner _queryRunner;
+
+  protected TestZooKeeperDistributedQueries() throws Exception {
+    this(new ZooKeeperQueryRunner());
   }
 
-  @JsonProperty
-  public String getConnectorId() {
-    return _connectorId;
+  protected TestZooKeeperDistributedQueries(ZooKeeperQueryRunner queryRunner) throws Exception {
+    super(queryRunner);
+    _queryRunner = queryRunner;
   }
 
-  @JsonProperty
-  public SpreadsheetTableHandle getSpreadsheetTableHandle() {
-    return (SpreadsheetTableHandle) _tableHandle;
+  @AfterClass(alwaysRun = true)
+  public final void destroy() {
+    closeAllRuntimeException(queryRunner);
   }
 
 }

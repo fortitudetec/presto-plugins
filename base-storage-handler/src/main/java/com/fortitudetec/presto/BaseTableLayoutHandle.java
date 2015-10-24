@@ -14,48 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto;
 
-import java.util.List;
-
-import com.facebook.presto.spi.HostAddress;
+import com.facebook.presto.spi.ConnectorTableHandle;
+import com.facebook.presto.spi.ConnectorTableLayoutHandle;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fortitudetec.presto.BaseSplit;
-import com.google.common.collect.ImmutableList;
 
-public class ZooKeeperSplit implements BaseSplit {
-  private final String _connectorId;
-  private final ZooKeeperTableHandle _tableHandle;
+public class BaseTableLayoutHandle implements ConnectorTableLayoutHandle, ConnectorId {
 
-  public ZooKeeperSplit(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("tableHandle") ZooKeeperTableHandle tableHandle) {
-    _connectorId = connectorId;
-    _tableHandle = tableHandle;
+  protected final BaseTableHandle _table;
+
+  @JsonCreator
+  public BaseTableLayoutHandle(@JsonProperty("table") BaseTableHandle table) {
+    _table = table;
   }
 
   @JsonProperty
+  public ConnectorTableHandle getTable() {
+    return _table;
+  }
+
+  @Override
   public String getConnectorId() {
-    return _connectorId;
-  }
-
-  @JsonProperty
-  public ZooKeeperTableHandle getTableHandle() {
-    return _tableHandle;
+    return _table.getConnectorId();
   }
 
   @Override
-  public boolean isRemotelyAccessible() {
-    return true;
-  }
-
-  @Override
-  public List<HostAddress> getAddresses() {
-    return ImmutableList.of();
-  }
-
-  @Override
-  public Object getInfo() {
-    return this;
+  public String toString() {
+    return "BaseTableLayoutHandle [_table=" + _table + "]";
   }
 
 }

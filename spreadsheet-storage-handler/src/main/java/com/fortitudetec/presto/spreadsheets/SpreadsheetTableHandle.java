@@ -21,19 +21,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fortitudetec.presto.BaseTableHandle;
 
-public class SpreadsheetTableHandle implements BaseTableHandle {
+public class SpreadsheetTableHandle extends BaseTableHandle {
 
   private final String _user;
-  private final SchemaTableName _tableName;
   private final String _spreadsheetPath;
-  private final String _connectorId;
 
   @JsonCreator
   public SpreadsheetTableHandle(@JsonProperty("connectorId") String connectorId, @JsonProperty("user") String user,
       @JsonProperty("tableName") SchemaTableName tableName, @JsonProperty("spreadsheetPath") String spreadsheetPath) {
-    _connectorId = connectorId;
+    super(connectorId, tableName);
     _user = user;
-    _tableName = tableName;
     _spreadsheetPath = spreadsheetPath;
   }
 
@@ -42,20 +39,12 @@ public class SpreadsheetTableHandle implements BaseTableHandle {
     return _user;
   }
 
-  @JsonProperty
-  public SchemaTableName getTableName() {
-    return _tableName;
-  }
 
   @JsonProperty
   public String getSpreadsheetPath() {
     return _spreadsheetPath;
   }
 
-  @JsonProperty
-  public String getConnectorId() {
-    return _connectorId;
-  }
 
   @Override
   public String toString() {

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public abstract class BaseRecordSet implements RecordSet {
 
-  private final List<Type> _types;
+  protected final List<Type> _types;
 
   public BaseRecordSet(List<? extends ColumnHandle> columnHandles) {
     Builder<Type> builder = ImmutableList.builder();

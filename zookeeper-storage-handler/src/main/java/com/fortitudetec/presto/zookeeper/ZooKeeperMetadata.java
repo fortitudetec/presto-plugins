@@ -51,20 +51,13 @@ import com.google.common.collect.ImmutableMap.Builder;
 
 public class ZooKeeperMetadata extends BaseReadOnlyConnectorMetadata {
 
-  private final String _connectorId;
-
   public ZooKeeperMetadata(String connectorId) {
-    _connectorId = connectorId;
+    super(connectorId);
   }
 
   @Override
   public List<String> listSchemaNames(ConnectorSession session) {
     return ImmutableList.of("zk");
-  }
-
-  @Override
-  public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName) {
-    return new ZooKeeperTableHandle(_connectorId, tableName);
   }
 
   @Override

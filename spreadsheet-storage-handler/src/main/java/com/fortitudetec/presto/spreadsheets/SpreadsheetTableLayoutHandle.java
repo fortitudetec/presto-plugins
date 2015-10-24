@@ -14,38 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto.spreadsheets;
 
-import com.facebook.presto.spi.SchemaTableName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fortitudetec.presto.BaseTableHandle;
+import com.fortitudetec.presto.BaseTableLayoutHandle;
 
-public class ZooKeeperTableHandle implements BaseTableHandle {
-
-  private final SchemaTableName _tableName;
-  private final String _connectorId;
+public class SpreadsheetTableLayoutHandle extends BaseTableLayoutHandle {
 
   @JsonCreator
-  public ZooKeeperTableHandle(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("tableName") SchemaTableName tableName) {
-    _connectorId = connectorId;
-    _tableName = tableName;
-  }
-
-  @JsonProperty
-  public SchemaTableName getTableName() {
-    return _tableName;
-  }
-
-  @JsonProperty
-  public String getConnectorId() {
-    return _connectorId;
+  public SpreadsheetTableLayoutHandle(@JsonProperty("table") SpreadsheetTableHandle table) {
+    super(table);
   }
 
   @Override
-  public String toString() {
-    return "ZooKeeperTableHandle [_tableName=" + _tableName + ", _connectorId=" + _connectorId + "]";
+  @JsonProperty
+  public SpreadsheetTableHandle getTable() {
+    return (SpreadsheetTableHandle) _table;
   }
 
 }

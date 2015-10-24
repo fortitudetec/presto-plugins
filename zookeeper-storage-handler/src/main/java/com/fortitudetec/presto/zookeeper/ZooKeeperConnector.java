@@ -21,6 +21,7 @@ import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.ConnectorMetadata;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplitManager;
+import com.fortitudetec.presto.BaseHandleResolver;
 
 public class ZooKeeperConnector implements Connector {
 
@@ -31,7 +32,7 @@ public class ZooKeeperConnector implements Connector {
 
   public ZooKeeperConnector(String connectorId, String zkConnection, int sessionTimeout) {
     _metadata = new ZooKeeperMetadata(connectorId);
-    _handleResolver = new ZooKeeperHandleResolver(connectorId);
+    _handleResolver = new BaseHandleResolver(connectorId);
     _splitManager = new ZooKeeperSplitManager(connectorId);
     _recordSetProvider = new ZooKeeperRecordSetProvider(zkConnection, sessionTimeout);
   }

@@ -20,13 +20,38 @@ import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorTableHandle;
+import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 
-public abstract class BaseHandleResolver implements ConnectorHandleResolver {
+public class BaseHandleResolver implements ConnectorHandleResolver {
 
   protected final String _connectorId;
 
   public BaseHandleResolver(String connectorId) {
     _connectorId = connectorId;
+  }
+
+  @Override
+  public Class<? extends ConnectorSplit> getSplitClass() {
+    return BaseSplit.class;
+  }
+
+  @Override
+  public boolean canHandle(ConnectorTableLayoutHandle handle) {
+    if (handle.getClass().equals(getTableLayoutHandleClass())) {
+      ConnectorId connectorId = (ConnectorId) handle;
+      return connectorId.getConnectorId().equals(connectorId);
+    }
+    return false;
+  }
+
+  @Override
+  public Class<? extends ConnectorTableLayoutHandle> getTableLayoutHandleClass() {
+    return BaseTableLayoutHandle.class;
+  }
+
+  @Override
+  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
+    return BaseTableHandle.class;
   }
 
   @Override
@@ -37,8 +62,8 @@ public abstract class BaseHandleResolver implements ConnectorHandleResolver {
   @Override
   public boolean canHandle(ConnectorTableHandle tableHandle) {
     if (tableHandle.getClass().equals(getTableHandleClass())) {
-      BaseTableHandle baseTableHandle = (BaseTableHandle) tableHandle;
-      return baseTableHandle.getConnectorId().equals(_connectorId);
+      ConnectorId connectorId = (ConnectorId) tableHandle;
+      return connectorId.getConnectorId().equals(connectorId);
     }
     return false;
   }
@@ -46,8 +71,8 @@ public abstract class BaseHandleResolver implements ConnectorHandleResolver {
   @Override
   public boolean canHandle(ColumnHandle columnHandle) {
     if (columnHandle.getClass().equals(getColumnHandleClass())) {
-      BaseColumnHandle baseColumnHandle = (BaseColumnHandle) columnHandle;
-      return baseColumnHandle.getConnectorId().equals(_connectorId);
+      ConnectorId connectorId = (ConnectorId) columnHandle;
+      return connectorId.getConnectorId().equals(connectorId);
     }
     return false;
   }
@@ -55,8 +80,8 @@ public abstract class BaseHandleResolver implements ConnectorHandleResolver {
   @Override
   public boolean canHandle(ConnectorSplit split) {
     if (split.getClass().equals(getSplitClass())) {
-      BaseSplit baseSplit = (BaseSplit) split;
-      return baseSplit.getConnectorId().equals(_connectorId);
+      ConnectorId connectorId = (ConnectorId) split;
+      return connectorId.getConnectorId().equals(connectorId);
     }
     return false;
   }

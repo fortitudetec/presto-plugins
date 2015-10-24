@@ -42,6 +42,8 @@ import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
 import com.fortitudetec.presto.BaseColumnHandle;
 import com.fortitudetec.presto.BaseReadOnlyConnectorMetadata;
+import com.fortitudetec.presto.BaseTableHandle;
+import com.fortitudetec.presto.BaseTableLayoutHandle;
 import com.fortitudetec.presto.spreadsheets.util.NormalizeName;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 import com.fortitudetec.presto.spreadsheets.util.Table;
@@ -55,16 +57,20 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   private final Path _basePath;
   private final Configuration _configuration;
   private final String _spreadsheetSubDir;
-  private final String _connectorId;
   private final boolean _useFileCache;
 
   public SpreadsheetMetadata(String connectorId, Configuration configuration, Path basePath, String spreadsheetSubDir,
       boolean useFileCache) {
-    _connectorId = connectorId;
+    super(connectorId);
     _basePath = basePath;
     _configuration = configuration;
     _spreadsheetSubDir = spreadsheetSubDir;
     _useFileCache = useFileCache;
+  }
+
+  @Override
+  protected BaseTableLayoutHandle createTableLayoutHandle(BaseTableHandle tableHandle) {
+    return new SpreadsheetTableLayoutHandle((SpreadsheetTableHandle) tableHandle);
   }
 
   @Override

@@ -18,6 +18,7 @@ package com.fortitudetec.presto.spreadsheets;
 
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorTableHandle;
+import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.fortitudetec.presto.BaseHandleResolver;
 
 public class SpreadsheetHandleResolver extends BaseHandleResolver {
@@ -27,10 +28,14 @@ public class SpreadsheetHandleResolver extends BaseHandleResolver {
   }
 
   @Override
+  public Class<? extends ConnectorTableLayoutHandle> getTableLayoutHandleClass() {
+    return SpreadsheetTableLayoutHandle.class;
+  }
+
+  @Override
   public Class<? extends ConnectorTableHandle> getTableHandleClass() {
     return SpreadsheetTableHandle.class;
   }
-
 
   @Override
   public Class<? extends ConnectorSplit> getSplitClass() {

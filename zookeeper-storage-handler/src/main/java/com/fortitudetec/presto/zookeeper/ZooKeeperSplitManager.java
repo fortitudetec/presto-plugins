@@ -24,6 +24,8 @@ import com.facebook.presto.spi.ConnectorSplitSource;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.FixedSplitSource;
 import com.fortitudetec.presto.BaseConnectorSplitManager;
+import com.fortitudetec.presto.BaseSplit;
+import com.fortitudetec.presto.BaseTableHandle;
 import com.google.common.collect.ImmutableList;
 
 @SuppressWarnings("deprecation")
@@ -38,8 +40,8 @@ public class ZooKeeperSplitManager extends BaseConnectorSplitManager {
   @Override
   public ConnectorSplitSource getPartitionSplits(ConnectorSession session, ConnectorTableHandle table,
       List<ConnectorPartition> partitions) {
-    ZooKeeperTableHandle tableHandle = (ZooKeeperTableHandle) table;
-    ZooKeeperSplit spreadsheetSplit = new ZooKeeperSplit(_connectorId, tableHandle);
+    BaseTableHandle tableHandle = (BaseTableHandle) table;
+    BaseSplit spreadsheetSplit = new BaseSplit(_connectorId, tableHandle);
     return new FixedSplitSource(_connectorId, ImmutableList.of(spreadsheetSplit));
   }
 }

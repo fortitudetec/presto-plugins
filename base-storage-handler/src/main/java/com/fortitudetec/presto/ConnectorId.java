@@ -14,26 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.zookeeper;
+package com.fortitudetec.presto;
 
-import com.facebook.presto.spi.ConnectorSplit;
-import com.facebook.presto.spi.ConnectorTableHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
-
-public class ZooKeeperHandleResolver extends BaseHandleResolver {
-
-  public ZooKeeperHandleResolver(String connectorId) {
-    super(connectorId);
-  }
-
-  @Override
-  public Class<? extends ConnectorTableHandle> getTableHandleClass() {
-    return ZooKeeperTableHandle.class;
-  }
-
-  @Override
-  public Class<? extends ConnectorSplit> getSplitClass() {
-    return ZooKeeperSplit.class;
-  }
-
+public interface ConnectorId {
+  String getConnectorId();
 }

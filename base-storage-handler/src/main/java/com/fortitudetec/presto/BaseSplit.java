@@ -16,10 +16,46 @@
  */
 package com.fortitudetec.presto;
 
+import java.util.List;
+
 import com.facebook.presto.spi.ConnectorSplit;
+import com.facebook.presto.spi.HostAddress;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
-public interface BaseSplit extends ConnectorSplit {
+public class BaseSplit implements ConnectorSplit, ConnectorId {
+  
+  protected final String _connectorId;
+  protected final BaseTableHandle _tableHandle;
 
-  String getConnectorId();
+  public BaseSplit(@JsonProperty("connectorId") String connectorId,
+      @JsonProperty("tableHandle") BaseTableHandle tableHandle) {
+    _connectorId = connectorId;
+    _tableHandle = tableHandle;
+  }
 
+  @JsonProperty
+  public String getConnectorId() {
+    return _connectorId;
+  }
+
+  @JsonProperty
+  public BaseTableHandle getTableHandle() {
+    return _tableHandle;
+  }
+
+  @Override
+  public boolean isRemotelyAccessible() {
+    return true;
+  }
+
+  @Override
+  public List<HostAddress> getAddresses() {
+    return ImmutableList.of();
+  }
+
+  @Override
+  public Object getInfo() {
+    return this;
+  }
 }
