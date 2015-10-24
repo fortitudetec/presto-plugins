@@ -16,30 +16,26 @@
  */
 package com.fortitudetec.presto.zookeeper;
 
-import static io.airlift.testing.Closeables.closeAllRuntimeException;
 
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
+//@Test
+public class TestZooKeeperDistributedQueries {
+  // extends AbstractTestQueries {
 
-import com.facebook.presto.tests.AbstractTestQueries;
-
-@Test
-public class TestZooKeeperDistributedQueries extends AbstractTestQueries {
-
-  private final ZooKeeperQueryRunner _queryRunner;
-
-  protected TestZooKeeperDistributedQueries() throws Exception {
-    this(new ZooKeeperQueryRunner());
-  }
-
-  protected TestZooKeeperDistributedQueries(ZooKeeperQueryRunner queryRunner) throws Exception {
-    super(queryRunner);
-    _queryRunner = queryRunner;
-  }
-
-  @AfterClass(alwaysRun = true)
-  public final void destroy() {
-    closeAllRuntimeException(queryRunner);
-  }
+  // private final ZooKeeperQueryRunner _queryRunner;
+  //
+  // protected TestZooKeeperDistributedQueries() throws Exception {
+  // this(new ZooKeeperQueryRunner());
+  // }
+  //
+  // protected TestZooKeeperDistributedQueries(ZooKeeperQueryRunner queryRunner)
+  // throws Exception {
+  // super(queryRunner);
+  // _queryRunner = queryRunner;
+  // }
+  //
+  // @AfterClass(alwaysRun = true)
+  // public final void destroy() {
+  // closeAllRuntimeException(queryRunner);
+  // }
 
 }
