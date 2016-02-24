@@ -16,16 +16,15 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
+import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableLayoutHandle;
-import com.fortitudetec.presto.BaseHandleResolver;
+import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
+import com.fortitudetec.presto.BaseColumnHandle;
 
-public class SpreadsheetHandleResolver extends BaseHandleResolver {
-
-  public SpreadsheetHandleResolver(String connectorId) {
-    super(connectorId);
-  }
+public class SpreadsheetHandleResolver implements ConnectorHandleResolver {
 
   @Override
   public Class<? extends ConnectorTableLayoutHandle> getTableLayoutHandleClass() {
@@ -40,6 +39,16 @@ public class SpreadsheetHandleResolver extends BaseHandleResolver {
   @Override
   public Class<? extends ConnectorSplit> getSplitClass() {
     return SpreadsheetSplit.class;
+  }
+
+  @Override
+  public Class<? extends ConnectorTransactionHandle> getTransactionHandleClass() {
+    return SpreadsheetTransactionHandle.class;
+  }
+
+  @Override
+  public Class<? extends ColumnHandle> getColumnHandleClass() {
+    return BaseColumnHandle.class;
   }
 
 }

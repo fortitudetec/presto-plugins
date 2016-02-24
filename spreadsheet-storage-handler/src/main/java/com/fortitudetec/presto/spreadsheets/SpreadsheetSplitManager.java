@@ -16,31 +16,23 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import java.util.List;
-
-import com.facebook.presto.spi.ConnectorPartition;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorSplitSource;
-import com.facebook.presto.spi.ConnectorTableHandle;
+import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.facebook.presto.spi.FixedSplitSource;
-import com.fortitudetec.presto.BaseConnectorSplitManager;
+import com.facebook.presto.spi.connector.ConnectorSplitManager;
+import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.google.common.collect.ImmutableList;
 
-@SuppressWarnings("deprecation")
-public class SpreadsheetSplitManager extends BaseConnectorSplitManager {
-
-  private final String _connectorId;
-
-  public SpreadsheetSplitManager(String connectorId) {
-    _connectorId = connectorId;
-  }
+public class SpreadsheetSplitManager implements ConnectorSplitManager {
 
   @Override
-  public ConnectorSplitSource getPartitionSplits(ConnectorSession session, ConnectorTableHandle table,
-      List<ConnectorPartition> partitions) {
-    SpreadsheetTableHandle spreadsheetTableHandle = (SpreadsheetTableHandle) table;
-    SpreadsheetSplit spreadsheetSplit = new SpreadsheetSplit(_connectorId, spreadsheetTableHandle);
-    return new FixedSplitSource(_connectorId, ImmutableList.of(spreadsheetSplit));
+  public ConnectorSplitSource getSplits(ConnectorTransactionHandle transactionHandle, ConnectorSession session,
+      ConnectorTableLayoutHandle layout) {
+    SpreadsheetTableLayoutHandle layoutHandle = (SpreadsheetTableLayoutHandle) layout;
+    SpreadsheetTableHandle spreadsheetTableHandle = layoutHandle.getTable();
+    SpreadsheetSplit spreadsheetSplit = new SpreadsheetSplit(spreadsheetTableHandle);
+    return new FixedSplitSource(null, ImmutableList.of(spreadsheetSplit));
   }
 
 }

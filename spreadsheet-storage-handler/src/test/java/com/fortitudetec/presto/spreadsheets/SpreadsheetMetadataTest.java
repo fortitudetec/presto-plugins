@@ -46,7 +46,6 @@ public class SpreadsheetMetadataTest {
 
   public static final ConnectorSession SESSION = new TestingConnectorSession("user1", UTC_KEY, ENGLISH,
       System.currentTimeMillis(), ImmutableList.of(), ImmutableMap.of());
-  public static final String CONNECTOR_ID = "test";
 
   private boolean useFileCache = true;
   private Configuration conf = new Configuration();
@@ -54,8 +53,7 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testListSchemaNames() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(CONNECTOR_ID, conf, basePath, SPREADSHEETS,
-        useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(conf, basePath, SPREADSHEETS, useFileCache);
     List<String> listSchemaNames = spreadsheetMetadata.listSchemaNames(SESSION);
     assertEquals(1, listSchemaNames.size());
     assertEquals(SCHEMA_NAME, listSchemaNames.get(0));
@@ -64,8 +62,7 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testListTables() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(CONNECTOR_ID, conf, basePath, SPREADSHEETS,
-        useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(conf, basePath, SPREADSHEETS, useFileCache);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     assertEquals(2, listTables.size());
     List<String> tables = new ArrayList<String>();
@@ -81,15 +78,12 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testGetTableHandle() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(CONNECTOR_ID, conf, basePath, SPREADSHEETS,
-        useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(conf, basePath, SPREADSHEETS, useFileCache);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     for (SchemaTableName name : listTables) {
       ConnectorTableHandle tableHandle = spreadsheetMetadata.getTableHandle(SESSION, name);
       assertTrue(tableHandle instanceof SpreadsheetTableHandle);
       SpreadsheetTableHandle spreadsheetTableHandle = (SpreadsheetTableHandle) tableHandle;
-      String connectorId = spreadsheetTableHandle.getConnectorId();
-      assertEquals(CONNECTOR_ID, connectorId);
       String filePath = new Path(new Path(new Path(basePath, SESSION.getUser()), SPREADSHEETS), PRESTO_EXAMPLE_XLSX)
           .toString();
       assertEquals(filePath, spreadsheetTableHandle.getSpreadsheetPath());

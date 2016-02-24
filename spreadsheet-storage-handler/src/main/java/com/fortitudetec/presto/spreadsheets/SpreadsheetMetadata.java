@@ -59,9 +59,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   private final String _spreadsheetSubDir;
   private final boolean _useFileCache;
 
-  public SpreadsheetMetadata(String connectorId, Configuration configuration, Path basePath, String spreadsheetSubDir,
-      boolean useFileCache) {
-    super(connectorId);
+  public SpreadsheetMetadata(Configuration configuration, Path basePath, String spreadsheetSubDir, boolean useFileCache) {
     _basePath = basePath;
     _configuration = configuration;
     _spreadsheetSubDir = spreadsheetSubDir;
@@ -84,7 +82,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName) {
     Path spreadsheetPath = getSpreadsheetBasePath(session.getUser());
     Path filePath = getSpreadsheetFilePath(session.getUser(), spreadsheetPath, tableName.getSchemaName());
-    return new SpreadsheetTableHandle(_connectorId, session.getUser(), tableName, filePath.toString());
+    return new SpreadsheetTableHandle(session.getUser(), tableName, filePath.toString());
   }
 
   @Override
@@ -117,7 +115,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     for (String columnName : columnNames) {
       TableType columnType = table.getType(columnName);
       Type type = getType(columnType);
-      builder.put(columnName, new BaseColumnHandle(_connectorId, columnName, type));
+      builder.put(columnName, new BaseColumnHandle(columnName, type));
     }
     return builder.build();
   }
@@ -228,7 +226,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     case NUMBER:
       return DoubleType.DOUBLE;
     case STRING:
-      return new VarcharType();
+      return VarcharType.VARCHAR;
     default:
       throw new PrestoException(INTERNAL_ERROR, "Not Supported [" + columnType + "]");
     }

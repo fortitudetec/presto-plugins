@@ -26,14 +26,16 @@ import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.facebook.presto.spi.Connector;
-import com.facebook.presto.spi.ConnectorFactory;
+import com.facebook.presto.spi.ConnectorHandleResolver;
+import com.facebook.presto.spi.connector.Connector;
+import com.facebook.presto.spi.connector.ConnectorFactory;
 
 public class SpreadsheetConnectorFactory implements ConnectorFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SpreadsheetConnectorFactory.class);
 
   private final Configuration _configuration;
+  private final SpreadsheetHandleResolver _handleResolver;
 
   public SpreadsheetConnectorFactory(ClassLoader classLoader) {
     _configuration = new HdfsConfiguration();
@@ -45,6 +47,7 @@ public class SpreadsheetConnectorFactory implements ConnectorFactory {
       LOGGER.info("Loading filesystem type {} class {}", fs.getScheme(), fs.getClass());
       _configuration.setClass("fs." + fs.getScheme() + ".impl", fs.getClass(), FileSystem.class);
     }
+    _handleResolver = new SpreadsheetHandleResolver();
   }
 
   @Override
@@ -61,7 +64,12 @@ public class SpreadsheetConnectorFactory implements ConnectorFactory {
     if (useFileCacheStr != null) {
       useFileCache = Boolean.parseBoolean(useFileCacheStr);
     }
-    return new SpreadsheetConnector(connectorId, _configuration, basePath, spreadsheetSubDir, useFileCache);
+    return new SpreadsheetConnector(_configuration, basePath, spreadsheetSubDir, useFileCache);
+  }
+
+  @Override
+  public ConnectorHandleResolver getHandleResolver() {
+    return _handleResolver;
   }
 
 }

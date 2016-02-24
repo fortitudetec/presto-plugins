@@ -14,27 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.blur;
+package com.fortitudetec.presto.spreadsheets;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 
-import java.util.List;
-
-import com.facebook.presto.spi.ConnectorFactory;
-import com.facebook.presto.spi.Plugin;
-import com.google.common.collect.ImmutableList;
-
-public class BlurPlugin implements Plugin {
-
-  @Override
-  public <T> List<T> getServices(Class<T> type) {
-    if (type == ConnectorFactory.class) {
-      return ImmutableList.of(type.cast(new BlurConnectorFactory(getClassLoader())));
-    }
-    return ImmutableList.of();
-  }
-
-  private static ClassLoader getClassLoader() {
-    return firstNonNull(Thread.currentThread().getContextClassLoader(), BlurPlugin.class.getClassLoader());
-  }
+public enum SpreadsheetTransactionHandle implements ConnectorTransactionHandle {
+  INSTANCE
 }

@@ -19,34 +19,27 @@ package com.fortitudetec.presto.spreadsheets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
-import com.facebook.presto.spi.Connector;
-import com.facebook.presto.spi.ConnectorHandleResolver;
-import com.facebook.presto.spi.ConnectorMetadata;
-import com.facebook.presto.spi.ConnectorRecordSetProvider;
-import com.facebook.presto.spi.ConnectorSplitManager;
+import com.facebook.presto.spi.connector.Connector;
+import com.facebook.presto.spi.connector.ConnectorMetadata;
+import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
+import com.facebook.presto.spi.connector.ConnectorSplitManager;
+import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
+import com.facebook.presto.spi.transaction.IsolationLevel;
 
 public class SpreadsheetConnector implements Connector {
 
   private final ConnectorMetadata _metadata;
-  private final ConnectorHandleResolver _handleResolver;
   private final ConnectorSplitManager _splitManager;
   private final ConnectorRecordSetProvider _recordSetProvider;
 
-  public SpreadsheetConnector(String connectorId, Configuration configuration, Path basePath, String spreadsheetSubDir,
-      boolean useFileCache) {
-    _metadata = new SpreadsheetMetadata(connectorId, configuration, basePath, spreadsheetSubDir, useFileCache);
-    _handleResolver = new SpreadsheetHandleResolver(connectorId);
-    _splitManager = new SpreadsheetSplitManager(connectorId);
+  public SpreadsheetConnector(Configuration configuration, Path basePath, String spreadsheetSubDir, boolean useFileCache) {
+    _metadata = new SpreadsheetMetadata(configuration, basePath, spreadsheetSubDir, useFileCache);
+    _splitManager = new SpreadsheetSplitManager();
     _recordSetProvider = new SpreadsheetRecordSetProvider(configuration, useFileCache);
   }
 
   @Override
-  public ConnectorHandleResolver getHandleResolver() {
-    return _handleResolver;
-  }
-
-  @Override
-  public ConnectorMetadata getMetadata() {
+  public ConnectorMetadata getMetadata(ConnectorTransactionHandle transactionHandle) {
     return _metadata;
   }
 
@@ -58,6 +51,11 @@ public class SpreadsheetConnector implements Connector {
   @Override
   public ConnectorRecordSetProvider getRecordSetProvider() {
     return _recordSetProvider;
+  }
+
+  @Override
+  public ConnectorTransactionHandle beginTransaction(IsolationLevel isolationLevel, boolean readOnly) {
+    return SpreadsheetTransactionHandle.INSTANCE;
   }
 
 }

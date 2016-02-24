@@ -21,14 +21,8 @@ import com.fortitudetec.presto.BaseSplit;
 
 public class SpreadsheetSplit extends BaseSplit {
 
-  public SpreadsheetSplit(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("spreadsheetTableHandle") SpreadsheetTableHandle spreadsheetTableHandle) {
-    super(connectorId, spreadsheetTableHandle);
-  }
-
-  @JsonProperty
-  public String getConnectorId() {
-    return _connectorId;
+  public SpreadsheetSplit(@JsonProperty("spreadsheetTableHandle") SpreadsheetTableHandle spreadsheetTableHandle) {
+    super(spreadsheetTableHandle);
   }
 
   @JsonProperty

@@ -20,8 +20,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.util.List;
 
-import com.facebook.presto.spi.ConnectorFactory;
 import com.facebook.presto.spi.Plugin;
+import com.facebook.presto.spi.connector.ConnectorFactory;
 import com.google.common.collect.ImmutableList;
 
 public class SpreadsheetPlugin implements Plugin {

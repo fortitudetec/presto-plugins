@@ -21,11 +21,12 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 
 import com.facebook.presto.spi.ColumnHandle;
-import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.SchemaTableName;
+import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
+import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 
 public class SpreadsheetRecordSetProvider implements ConnectorRecordSetProvider {
@@ -39,7 +40,8 @@ public class SpreadsheetRecordSetProvider implements ConnectorRecordSetProvider 
   }
 
   @Override
-  public RecordSet getRecordSet(ConnectorSession session, ConnectorSplit split, List<? extends ColumnHandle> columns) {
+  public RecordSet getRecordSet(ConnectorTransactionHandle transactionHandle, ConnectorSession session,
+      ConnectorSplit split, List<? extends ColumnHandle> columns) {
     SpreadsheetSplit spreadsheetSplit = (SpreadsheetSplit) split;
     SpreadsheetTableHandle spreadsheetTableHandle = spreadsheetSplit.getSpreadsheetTableHandle();
     SchemaTableName schemaTableName = spreadsheetTableHandle.getTableName();

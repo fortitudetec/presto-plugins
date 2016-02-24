@@ -27,9 +27,9 @@ public class SpreadsheetTableHandle extends BaseTableHandle {
   private final String _spreadsheetPath;
 
   @JsonCreator
-  public SpreadsheetTableHandle(@JsonProperty("connectorId") String connectorId, @JsonProperty("user") String user,
+  public SpreadsheetTableHandle(@JsonProperty("user") String user,
       @JsonProperty("tableName") SchemaTableName tableName, @JsonProperty("spreadsheetPath") String spreadsheetPath) {
-    super(connectorId, tableName);
+    super(tableName);
     _user = user;
     _spreadsheetPath = spreadsheetPath;
   }
@@ -39,17 +39,14 @@ public class SpreadsheetTableHandle extends BaseTableHandle {
     return _user;
   }
 
-
   @JsonProperty
   public String getSpreadsheetPath() {
     return _spreadsheetPath;
   }
 
-
   @Override
   public String toString() {
-    return "SpreadsheetTableHandle [_user=" + _user + ", _tableName=" + _tableName + ", _spreadsheetPath="
-        + _spreadsheetPath + ", _connectorId=" + _connectorId + "]";
+    return "SpreadsheetTableHandle [_user=" + _user + ", _spreadsheetPath=" + _spreadsheetPath + "]";
   }
 
 }

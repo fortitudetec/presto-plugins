@@ -21,7 +21,7 @@ import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BaseTableLayoutHandle implements ConnectorTableLayoutHandle, ConnectorId {
+public class BaseTableLayoutHandle implements ConnectorTableLayoutHandle {
 
   protected final BaseTableHandle _table;
 
@@ -33,11 +33,6 @@ public class BaseTableLayoutHandle implements ConnectorTableLayoutHandle, Connec
   @JsonProperty
   public ConnectorTableHandle getTable() {
     return _table;
-  }
-
-  @Override
-  public String getConnectorId() {
-    return _table.getConnectorId();
   }
 
   @Override

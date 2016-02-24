@@ -23,20 +23,12 @@ import com.facebook.presto.spi.HostAddress;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-public class BaseSplit implements ConnectorSplit, ConnectorId {
-  
-  protected final String _connectorId;
+public class BaseSplit implements ConnectorSplit {
+
   protected final BaseTableHandle _tableHandle;
 
-  public BaseSplit(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("tableHandle") BaseTableHandle tableHandle) {
-    _connectorId = connectorId;
+  public BaseSplit(@JsonProperty("tableHandle") BaseTableHandle tableHandle) {
     _tableHandle = tableHandle;
-  }
-
-  @JsonProperty
-  public String getConnectorId() {
-    return _connectorId;
   }
 
   @JsonProperty

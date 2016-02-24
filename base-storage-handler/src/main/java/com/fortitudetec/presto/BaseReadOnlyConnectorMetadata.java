@@ -16,10 +16,6 @@
  */
 package com.fortitudetec.presto;
 
-import static com.facebook.presto.spi.StandardErrorCode.NOT_SUPPORTED;
-import io.airlift.slice.Slice;
-
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,37 +24,25 @@ import java.util.Set;
 
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
-import com.facebook.presto.spi.ConnectorInsertTableHandle;
-import com.facebook.presto.spi.ConnectorMetadata;
-import com.facebook.presto.spi.ConnectorOutputTableHandle;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableLayout;
 import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.facebook.presto.spi.ConnectorTableLayoutResult;
 import com.facebook.presto.spi.ConnectorTableMetadata;
-import com.facebook.presto.spi.ConnectorViewDefinition;
 import com.facebook.presto.spi.Constraint;
-import com.facebook.presto.spi.LocalProperty;
-import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
-import com.facebook.presto.spi.TupleDomain;
+import com.facebook.presto.spi.connector.ConnectorMetadata;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 
 public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata {
 
-  protected final String _connectorId;
-
-  public BaseReadOnlyConnectorMetadata(String connectorId) {
-    _connectorId = connectorId;
-  }
-
   @Override
   public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName) {
-    return new BaseTableHandle(_connectorId, tableName);
+    return new BaseTableHandle(tableName);
   }
 
   @Override
@@ -66,14 +50,7 @@ public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata
       Constraint<ColumnHandle> constraint, Optional<Set<ColumnHandle>> desiredColumns) {
     BaseTableHandle tableHandle = (BaseTableHandle) table;
     BaseTableLayoutHandle baseTableLayoutHandle = createTableLayoutHandle(tableHandle);
-    ConnectorTableLayoutHandle handle = baseTableLayoutHandle;
-    Optional<List<ColumnHandle>> columns = Optional.empty();
-    TupleDomain<ColumnHandle> predicate = TupleDomain.all();
-    Optional<Set<ColumnHandle>> partitioningColumns = Optional.empty();
-    Optional<List<TupleDomain<ColumnHandle>>> discretePredicates = Optional.empty();
-    List<LocalProperty<ColumnHandle>> localProperties = ImmutableList.of();
-    ConnectorTableLayout layout = new ConnectorTableLayout(handle, columns, predicate, partitioningColumns,
-        discretePredicates, localProperties);
+    ConnectorTableLayout layout = new ConnectorTableLayout(baseTableLayoutHandle);
     return ImmutableList.of(new ConnectorTableLayoutResult(layout, constraint.getSummary()));
   }
 
@@ -129,73 +106,6 @@ public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata
       }
     }
     return mapBuilder.build();
-  }
-
-  @Override
-  public ColumnHandle getSampleWeightColumnHandle(ConnectorSession session, ConnectorTableHandle tableHandle) {
-    return null;
-  }
-
-  @Override
-  public boolean canCreateSampledTables(ConnectorSession session) {
-    return false;
-  }
-
-  @Override
-  public void createTable(ConnectorSession session, ConnectorTableMetadata tableMetadata) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support creates");
-  }
-
-  @Override
-  public void dropTable(ConnectorSession session, ConnectorTableHandle tableHandle) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support drops");
-  }
-
-  @Override
-  public void renameTable(ConnectorSession session, ConnectorTableHandle tableHandle, SchemaTableName newTableName) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support renames");
-  }
-
-  @Override
-  public ConnectorOutputTableHandle beginCreateTable(ConnectorSession session, ConnectorTableMetadata tableMetadata) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support creates");
-  }
-
-  @Override
-  public void commitCreateTable(ConnectorSession session, ConnectorOutputTableHandle tableHandle,
-      Collection<Slice> fragments) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support creates");
-  }
-
-  @Override
-  public ConnectorInsertTableHandle beginInsert(ConnectorSession session, ConnectorTableHandle tableHandle) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support inserts");
-  }
-
-  @Override
-  public void commitInsert(ConnectorSession session, ConnectorInsertTableHandle insertHandle,
-      Collection<Slice> fragments) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support inserts");
-  }
-
-  @Override
-  public void createView(ConnectorSession session, SchemaTableName viewName, String viewData, boolean replace) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support views");
-  }
-
-  @Override
-  public void dropView(ConnectorSession session, SchemaTableName viewName) {
-    throw new PrestoException(NOT_SUPPORTED, "This connector does not support views");
-  }
-
-  @Override
-  public List<SchemaTableName> listViews(ConnectorSession session, String schemaNameOrNull) {
-    return ImmutableList.of();
-  }
-
-  @Override
-  public Map<SchemaTableName, ConnectorViewDefinition> getViews(ConnectorSession session, SchemaTablePrefix prefix) {
-    return ImmutableMap.of();
   }
 
 }

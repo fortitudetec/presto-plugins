@@ -5,15 +5,12 @@ import com.facebook.presto.spi.SchemaTableName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BaseTableHandle implements ConnectorTableHandle, ConnectorId {
+public class BaseTableHandle implements ConnectorTableHandle {
 
   protected final SchemaTableName _tableName;
-  protected final String _connectorId;
 
   @JsonCreator
-  public BaseTableHandle(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("tableName") SchemaTableName tableName) {
-    _connectorId = connectorId;
+  public BaseTableHandle(@JsonProperty("tableName") SchemaTableName tableName) {
     _tableName = tableName;
   }
 
@@ -22,14 +19,9 @@ public class BaseTableHandle implements ConnectorTableHandle, ConnectorId {
     return _tableName;
   }
 
-  @JsonProperty
-  public String getConnectorId() {
-    return _connectorId;
-  }
-
   @Override
   public String toString() {
-    return "BaseTableHandle [_tableName=" + _tableName + ", _connectorId=" + _connectorId + "]";
+    return "BaseTableHandle [_tableName=" + _tableName + "]";
   }
 
 }

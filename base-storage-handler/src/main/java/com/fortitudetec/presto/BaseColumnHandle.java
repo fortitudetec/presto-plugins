@@ -21,16 +21,13 @@ import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BaseColumnHandle implements ColumnHandle, ConnectorId {
+public class BaseColumnHandle implements ColumnHandle {
 
   protected final String _columnName;
   protected final Type _type;
-  protected final String _connectorId;
 
   @JsonCreator
-  public BaseColumnHandle(@JsonProperty("connectorId") String connectorId,
-      @JsonProperty("columnName") String columnName, @JsonProperty("type") Type type) {
-    _connectorId = connectorId;
+  public BaseColumnHandle(@JsonProperty("columnName") String columnName, @JsonProperty("type") Type type) {
     _columnName = columnName;
     _type = type;
   }
@@ -45,14 +42,9 @@ public class BaseColumnHandle implements ColumnHandle, ConnectorId {
     return _type;
   }
 
-  @JsonProperty
-  public String getConnectorId() {
-    return _connectorId;
-  }
-
   @Override
   public String toString() {
-    return "BaseColumnHandle [_columnName=" + _columnName + ", _type=" + _type + ", _connectorId=" + _connectorId + "]";
+    return "BaseColumnHandle [_columnName=" + _columnName + ", _type=" + _type + "]";
   }
 
 }
