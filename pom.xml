@@ -26,7 +26,7 @@ under the License.
 	<packaging>pom</packaging>
 	<name>presto plugins</name>
 	<properties>
-		<presto.version>0.139</presto.version>
+		<presto.version>0.181</presto.version>
 		<guava.version>18.0</guava.version>
 		<javax.inject>1</javax.inject>
 		<hadoop-client.version>2.6.0-cdh5.4.5</hadoop-client.version>
@@ -142,10 +142,8 @@ under the License.
 		</dependencies>
 	</dependencyManagement>
 
-	
+
 	<modules>
-		<module>spreadsheet-storage-handler</module>
-		<module>base-storage-handler</module>
 		<module>presto-csd</module>
 	</modules>
 

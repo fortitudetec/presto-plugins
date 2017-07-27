@@ -1,23 +1,5 @@
 package com.fortitudetec.presto;
 
-import io.airlift.configuration.Configuration;
-import io.airlift.configuration.ConfigurationFactory;
-import io.airlift.configuration.ConfigurationInspector;
-import io.airlift.configuration.ConfigurationInspector.ConfigAttribute;
-import io.airlift.configuration.ConfigurationInspector.ConfigRecord;
-import io.airlift.configuration.WarningsMonitor;
-import io.airlift.discovery.client.DiscoveryModule;
-import io.airlift.event.client.HttpEventModule;
-import io.airlift.event.client.JsonEventModule;
-import io.airlift.http.server.HttpServerModule;
-import io.airlift.jaxrs.JaxrsModule;
-import io.airlift.jmx.JmxHttpModule;
-import io.airlift.jmx.JmxModule;
-import io.airlift.json.JsonModule;
-import io.airlift.log.LogJmxModule;
-import io.airlift.node.NodeModule;
-import io.airlift.tracetoken.TraceTokenModule;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +25,9 @@ import org.json.JSONObject;
 import org.weakref.jmx.guice.MBeanModule;
 
 import com.facebook.presto.discovery.EmbeddedDiscoveryModule;
+import com.facebook.presto.eventlistener.EventListenerModule;
+import com.facebook.presto.security.AccessControlModule;
+import com.facebook.presto.server.GracefulShutdownModule;
 import com.facebook.presto.server.ServerMainModule;
 import com.facebook.presto.server.security.ServerSecurityModule;
 import com.facebook.presto.sql.parser.SqlParserOptions;
@@ -50,6 +35,22 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
 import com.google.inject.spi.Message;
+
+import io.airlift.configuration.ConfigurationFactory;
+import io.airlift.configuration.ConfigurationInspector;
+import io.airlift.configuration.ConfigurationInspector.ConfigAttribute;
+import io.airlift.configuration.ConfigurationInspector.ConfigRecord;
+import io.airlift.discovery.client.DiscoveryModule;
+import io.airlift.event.client.HttpEventModule;
+import io.airlift.event.client.JsonEventModule;
+import io.airlift.http.server.HttpServerModule;
+import io.airlift.jaxrs.JaxrsModule;
+import io.airlift.jmx.JmxHttpModule;
+import io.airlift.jmx.JmxModule;
+import io.airlift.json.JsonModule;
+import io.airlift.log.LogJmxModule;
+import io.airlift.node.NodeModule;
+import io.airlift.tracetoken.TraceTokenModule;
 
 public class CreateServiceDescriptor {
 
@@ -83,16 +84,10 @@ public class CreateServiceDescriptor {
     modules.add(new NodeModule(), new DiscoveryModule(), new HttpServerModule(), new JsonModule(),
         new JaxrsModule(true), new MBeanModule(), new JmxModule(), new JmxHttpModule(), new LogJmxModule(),
         new TraceTokenModule(), new JsonEventModule(), new HttpEventModule(), new EmbeddedDiscoveryModule(),
-        new ServerSecurityModule(), new ServerMainModule(new SqlParserOptions()));
+        new ServerSecurityModule(), new AccessControlModule(), new EventListenerModule(),
+        new ServerMainModule(new SqlParserOptions()), new GracefulShutdownModule());
 
-    // Module modules;
-    WarningsMonitor warnings = new WarningsMonitor() {
-      @Override
-      public void onWarning(String s) {
-        System.out.println(s);
-      }
-    };
-    List<Message> messages = Configuration.processConfiguration(factory, warnings, modules.build());
+    List<Message> messages = factory.validateRegisteredConfigurationProvider();
 
     System.out.println(messages);
 
@@ -195,7 +190,8 @@ public class CreateServiceDescriptor {
     String label = getLabel(name, attributeName);
     jsonObject.put("name", name);
     jsonObject.put("label", label);
-    if (description.trim().isEmpty()) {
+    if (description.trim()
+                   .isEmpty()) {
       jsonObject.put("description", label);
     } else {
       jsonObject.put("description", description);
@@ -210,15 +206,22 @@ public class CreateServiceDescriptor {
 
   private static String getLabel(String name, String attributeName) {
     StringBuilder builder = new StringBuilder();
-    for (String s : Splitter.on('_').split(name)) {
-      builder.append(s.substring(0, 1).toUpperCase()).append(s.substring(1)).append(' ');
+    for (String s : Splitter.on('_')
+                            .split(name)) {
+      builder.append(s.substring(0, 1)
+                      .toUpperCase())
+             .append(s.substring(1))
+             .append(' ');
     }
-    builder.append('(').append(attributeName).append(')');
+    builder.append('(')
+           .append(attributeName)
+           .append(')');
     return builder.toString();
   }
 
   private static String getName(String propertyName) {
-    return propertyName.replace('.', '_').replace('-', '_');
+    return propertyName.replace('.', '_')
+                       .replace('-', '_');
   }
 
 }
