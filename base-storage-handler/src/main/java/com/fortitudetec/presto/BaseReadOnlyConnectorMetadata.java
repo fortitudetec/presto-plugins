@@ -40,6 +40,8 @@ import com.google.common.collect.ImmutableMap;
 
 public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata {
 
+  private static final String DEFAULT_COMMENT = "";
+
   @Override
   public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName) {
     return new BaseTableHandle(tableName);
@@ -63,7 +65,7 @@ public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata
   public ConnectorTableLayout getTableLayout(ConnectorSession session, ConnectorTableLayoutHandle handle) {
     BaseTableLayoutHandle layout = (BaseTableLayoutHandle) handle;
     List<ConnectorTableLayoutResult> tableLayouts = getTableLayouts(session, layout.getTable(),
-        Constraint.<ColumnHandle> alwaysTrue(), Optional.empty());
+        Constraint.<ColumnHandle>alwaysTrue(), Optional.empty());
     ConnectorTableLayoutResult connectorTableLayoutResult = tableLayouts.get(0);
     return connectorTableLayoutResult.getTableLayout();
   }
@@ -72,7 +74,7 @@ public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata
   public ColumnMetadata getColumnMetadata(ConnectorSession session, ConnectorTableHandle tableHandle,
       ColumnHandle columnHandle) {
     BaseColumnHandle baseColumnHandle = (BaseColumnHandle) columnHandle;
-    return new ColumnMetadata(baseColumnHandle.getColumnName(), baseColumnHandle.getType(), false);
+    return new ColumnMetadata(baseColumnHandle.getColumnName(), baseColumnHandle.getType(), DEFAULT_COMMENT, false);
   }
 
   @Override
@@ -88,7 +90,8 @@ public abstract class BaseReadOnlyConnectorMetadata implements ConnectorMetadata
   }
 
   @Override
-  public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession session, SchemaTablePrefix prefix) {
+  public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession session,
+      SchemaTablePrefix prefix) {
     ImmutableMap.Builder<SchemaTableName, List<ColumnMetadata>> mapBuilder = ImmutableMap.builder();
     List<String> listSchemaNames = listSchemaNames(session);
     for (String schema : listSchemaNames) {

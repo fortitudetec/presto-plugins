@@ -28,11 +28,16 @@ import org.slf4j.LoggerFactory;
 
 import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.connector.Connector;
+import com.facebook.presto.spi.connector.ConnectorContext;
 import com.facebook.presto.spi.connector.ConnectorFactory;
 
 public class SpreadsheetConnectorFactory implements ConnectorFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SpreadsheetConnectorFactory.class);
+
+  private static final String USE_FILE_CACHE = "useFileCache";
+  private static final String SUBDIR = "subdir";
+  private static final String BASEPATH = "basepath";
 
   private final Configuration _configuration;
   private final SpreadsheetHandleResolver _handleResolver;
@@ -56,10 +61,10 @@ public class SpreadsheetConnectorFactory implements ConnectorFactory {
   }
 
   @Override
-  public Connector create(String connectorId, Map<String, String> config) {
-    Path basePath = new Path(config.get("basepath"));
-    String spreadsheetSubDir = config.get("subdir");
-    String useFileCacheStr = config.get("useFileCache");
+  public Connector create(String connectorId, Map<String, String> config, ConnectorContext context) {
+    Path basePath = new Path(config.get(BASEPATH));
+    String spreadsheetSubDir = config.get(SUBDIR);
+    String useFileCacheStr = config.get(USE_FILE_CACHE);
     boolean useFileCache = true;
     if (useFileCacheStr != null) {
       useFileCache = Boolean.parseBoolean(useFileCacheStr);

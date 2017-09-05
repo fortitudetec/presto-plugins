@@ -32,7 +32,7 @@ public class SpreadsheetSplitManager implements ConnectorSplitManager {
     SpreadsheetTableLayoutHandle layoutHandle = (SpreadsheetTableLayoutHandle) layout;
     SpreadsheetTableHandle spreadsheetTableHandle = layoutHandle.getTable();
     SpreadsheetSplit spreadsheetSplit = new SpreadsheetSplit(spreadsheetTableHandle);
-    return new FixedSplitSource(null, ImmutableList.of(spreadsheetSplit));
+    return new FixedSplitSource(ImmutableList.of(spreadsheetSplit));
   }
 
 }

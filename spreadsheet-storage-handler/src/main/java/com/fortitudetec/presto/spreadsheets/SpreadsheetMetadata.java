@@ -16,8 +16,6 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import static com.facebook.presto.spi.StandardErrorCode.INTERNAL_ERROR;
-
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -59,7 +57,8 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   private final String _spreadsheetSubDir;
   private final boolean _useFileCache;
 
-  public SpreadsheetMetadata(Configuration configuration, Path basePath, String spreadsheetSubDir, boolean useFileCache) {
+  public SpreadsheetMetadata(Configuration configuration, Path basePath, String spreadsheetSubDir,
+      boolean useFileCache) {
     _basePath = basePath;
     _configuration = configuration;
     _spreadsheetSubDir = spreadsheetSubDir;
@@ -143,7 +142,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
         }
         return builder.build();
       } catch (IOException e) {
-        throw new PrestoException(INTERNAL_ERROR, "Unknown error", e);
+        throw new PrestoException(SpreadsheetErrorCode.INTERNAL_ERROR, "Unknown error", e);
       }
     }
 
@@ -166,7 +165,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
       try {
         return new SpreadsheetReader(_useFileCache, _configuration, _file);
       } catch (IOException e) {
-        throw new PrestoException(INTERNAL_ERROR, "Unknown error", e);
+        throw new PrestoException(SpreadsheetErrorCode.INTERNAL_ERROR, "Unknown error", e);
       }
     }
   }
@@ -195,12 +194,14 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
         });
         Map<String, Path> map = new HashMap<>();
         for (FileStatus fileStatus : listStatus) {
-          String prestoSchemaName = NormalizeName.normalizeName(fileStatus.getPath().getName(), map.keySet());
+          String prestoSchemaName = NormalizeName.normalizeName(fileStatus.getPath()
+                                                                          .getName(),
+              map.keySet());
           map.put(prestoSchemaName, fileStatus.getPath());
         }
         return ImmutableMap.copyOf(map);
       } catch (IOException e) {
-        throw new PrestoException(INTERNAL_ERROR, "Unknown error", e);
+        throw new PrestoException(SpreadsheetErrorCode.INTERNAL_ERROR, "Unknown error", e);
       }
     }
   }
@@ -210,7 +211,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     Map<String, Path> schemaMap = ugi.doAs(new MapSchemaNames(user));
     Path path = schemaMap.get(schema);
     if (path == null) {
-      throw new PrestoException(INTERNAL_ERROR, "File [" + schema + "] not found.");
+      throw new PrestoException(SpreadsheetErrorCode.INTERNAL_ERROR, "File [" + schema + "] not found.");
     }
     return path;
   }
@@ -228,14 +229,14 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     case STRING:
       return VarcharType.VARCHAR;
     default:
-      throw new PrestoException(INTERNAL_ERROR, "Not Supported [" + columnType + "]");
+      throw new PrestoException(SpreadsheetErrorCode.INTERNAL_ERROR, "Not Supported [" + columnType + "]");
     }
   }
 
   public static SpreadsheetReader getSpreadSheetHelper(ConnectorSession session,
       SpreadsheetTableHandle spreadsheetTableHandle, Configuration configuration, boolean useFileCache) {
     UserGroupInformation ugi = UserGroupInformation.createRemoteUser(session.getUser());
-    return ugi.doAs(new GetSpreadsheetHelper(useFileCache, new Path(spreadsheetTableHandle.getSpreadsheetPath()),
-        configuration));
+    return ugi.doAs(
+        new GetSpreadsheetHelper(useFileCache, new Path(spreadsheetTableHandle.getSpreadsheetPath()), configuration));
   }
 }

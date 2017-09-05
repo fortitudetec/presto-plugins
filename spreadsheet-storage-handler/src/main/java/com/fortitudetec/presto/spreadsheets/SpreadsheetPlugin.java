@@ -18,23 +18,21 @@ package com.fortitudetec.presto.spreadsheets;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
-import java.util.List;
-
 import com.facebook.presto.spi.Plugin;
 import com.facebook.presto.spi.connector.ConnectorFactory;
+import com.facebook.presto.spi.connector.ConnectorFactoryContext;
 import com.google.common.collect.ImmutableList;
 
 public class SpreadsheetPlugin implements Plugin {
 
   @Override
-  public <T> List<T> getServices(Class<T> type) {
-    if (type == ConnectorFactory.class) {
-      return ImmutableList.of(type.cast(new SpreadsheetConnectorFactory(getClassLoader())));
-    }
-    return ImmutableList.of();
+  public Iterable<ConnectorFactory> getConnectorFactories(ConnectorFactoryContext context) {
+    return ImmutableList.of(new SpreadsheetConnectorFactory(getClassLoader()));
   }
 
   private static ClassLoader getClassLoader() {
-    return firstNonNull(Thread.currentThread().getContextClassLoader(), SpreadsheetPlugin.class.getClassLoader());
+    return firstNonNull(Thread.currentThread()
+                              .getContextClassLoader(),
+        SpreadsheetPlugin.class.getClassLoader());
   }
 }

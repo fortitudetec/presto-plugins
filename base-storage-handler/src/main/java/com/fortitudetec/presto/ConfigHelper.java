@@ -16,8 +16,6 @@
  */
 package com.fortitudetec.presto;
 
-import static com.facebook.presto.spi.StandardErrorCode.EXTERNAL;
-
 import java.util.Map;
 
 import com.facebook.presto.spi.PrestoException;
@@ -26,7 +24,7 @@ public class ConfigHelper {
   public static String getOrThrowExceptionIfNull(Map<String, String> config, String name) {
     String s = config.get(name);
     if (s == null) {
-      throw new PrestoException(EXTERNAL, name + " missing in configuration");
+      throw new PrestoException(BaseErrorCode.CONFIG_ERROR, name + " missing in configuration");
     }
     return s;
   }
