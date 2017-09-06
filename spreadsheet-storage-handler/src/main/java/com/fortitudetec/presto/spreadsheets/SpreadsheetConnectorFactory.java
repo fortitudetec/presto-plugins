@@ -16,6 +16,7 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.logging.Logger;
@@ -23,6 +24,7 @@ import java.util.logging.Logger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.connector.Connector;
@@ -60,7 +62,12 @@ public class SpreadsheetConnectorFactory implements ConnectorFactory {
     if (useFileCacheStr != null) {
       useFileCache = Boolean.parseBoolean(useFileCacheStr);
     }
-    return new SpreadsheetConnector(_configuration, basePath, spreadsheetSubDir, useFileCache);
+    try {
+      return new SpreadsheetConnector(UserGroupInformation.getCurrentUser(), _configuration, basePath,
+          spreadsheetSubDir, useFileCache);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void setupConfiguration() {

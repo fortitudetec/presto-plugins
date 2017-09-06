@@ -56,13 +56,15 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   private final Configuration _configuration;
   private final String _spreadsheetSubDir;
   private final boolean _useFileCache;
+  private final UserGroupInformation _ugi;
 
-  public SpreadsheetMetadata(Configuration configuration, Path basePath, String spreadsheetSubDir,
-      boolean useFileCache) {
+  public SpreadsheetMetadata(UserGroupInformation ugi, Configuration configuration, Path basePath,
+      String spreadsheetSubDir, boolean useFileCache) throws IOException {
     _basePath = basePath;
     _configuration = configuration;
     _spreadsheetSubDir = spreadsheetSubDir;
     _useFileCache = useFileCache;
+    _ugi = ugi;
   }
 
   @Override
@@ -72,15 +74,14 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
 
   @Override
   public List<String> listSchemaNames(ConnectorSession session) {
-    UserGroupInformation ugi = UserGroupInformation.createRemoteUser(session.getUser());
-    Map<String, Path> schemaMap = ugi.doAs(new MapSchemaNames(session.getUser()));
+    Map<String, Path> schemaMap = getUgi(session).doAs(new MapSchemaNames(session.getUser()));
     return ImmutableList.copyOf(schemaMap.keySet());
   }
 
   @Override
   public ConnectorTableHandle getTableHandle(ConnectorSession session, SchemaTableName tableName) {
     Path spreadsheetPath = getSpreadsheetBasePath(session.getUser());
-    Path filePath = getSpreadsheetFilePath(session.getUser(), spreadsheetPath, tableName.getSchemaName());
+    Path filePath = getSpreadsheetFilePath(session, spreadsheetPath, tableName.getSchemaName());
     return new SpreadsheetTableHandle(session.getUser(), tableName, filePath.toString());
   }
 
@@ -90,9 +91,9 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
       return ImmutableList.of();
     }
     Path spreadsheetBasePath = getSpreadsheetBasePath(session.getUser());
-    Path filePath = getSpreadsheetFilePath(session.getUser(), spreadsheetBasePath, schemaNameOrNull);
-    UserGroupInformation ugi = UserGroupInformation.createRemoteUser(session.getUser());
-    SpreadsheetReader spreadSheetHelper = ugi.doAs(new GetSpreadsheetHelper(_useFileCache, filePath, _configuration));
+    Path filePath = getSpreadsheetFilePath(session, spreadsheetBasePath, schemaNameOrNull);
+    SpreadsheetReader spreadSheetHelper = getUgi(session).doAs(
+        new GetSpreadsheetHelper(_useFileCache, filePath, _configuration));
     List<String> tableNames = spreadSheetHelper.getTableNames();
     Builder<SchemaTableName> builder = ImmutableList.builder();
     for (String table : tableNames) {
@@ -104,8 +105,8 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   @Override
   public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle) {
     SpreadsheetTableHandle spreadsheetTableHandle = (SpreadsheetTableHandle) tableHandle;
-    SpreadsheetReader spreadSheetHelper = getSpreadSheetHelper(session, spreadsheetTableHandle, _configuration,
-        _useFileCache);
+    SpreadsheetReader spreadSheetHelper = getSpreadSheetHelper(getUgi(session), session, spreadsheetTableHandle,
+        _configuration, _useFileCache);
     SchemaTableName schemaTableName = spreadsheetTableHandle.getTableName();
     String tableName = schemaTableName.getTableName();
     Table table = spreadSheetHelper.getTable(tableName);
@@ -206,9 +207,8 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     }
   }
 
-  private Path getSpreadsheetFilePath(String user, Path spreadsheetPath, String schema) {
-    UserGroupInformation ugi = UserGroupInformation.createRemoteUser(user);
-    Map<String, Path> schemaMap = ugi.doAs(new MapSchemaNames(user));
+  private Path getSpreadsheetFilePath(ConnectorSession session, Path spreadsheetPath, String schema) {
+    Map<String, Path> schemaMap = getUgi(session).doAs(new MapSchemaNames(session.getUser()));
     Path path = schemaMap.get(schema);
     if (path == null) {
       throw new PrestoException(SpreadsheetErrorCode.INTERNAL_ERROR, "File [" + schema + "] not found.");
@@ -233,10 +233,17 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     }
   }
 
-  public static SpreadsheetReader getSpreadSheetHelper(ConnectorSession session,
+  public static SpreadsheetReader getSpreadSheetHelper(UserGroupInformation ugi, ConnectorSession session,
       SpreadsheetTableHandle spreadsheetTableHandle, Configuration configuration, boolean useFileCache) {
-    UserGroupInformation ugi = UserGroupInformation.createRemoteUser(session.getUser());
     return ugi.doAs(
         new GetSpreadsheetHelper(useFileCache, new Path(spreadsheetTableHandle.getSpreadsheetPath()), configuration));
+  }
+
+  private UserGroupInformation getUgi(ConnectorSession session) {
+    return getProxyUserGroupInformation(session, _ugi);
+  }
+
+  public static UserGroupInformation getProxyUserGroupInformation(ConnectorSession session, UserGroupInformation ugi) {
+    return UserGroupInformation.createProxyUser(session.getUser(), ugi);
   }
 }

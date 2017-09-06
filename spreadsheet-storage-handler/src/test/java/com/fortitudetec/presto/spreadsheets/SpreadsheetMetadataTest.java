@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 
 import com.facebook.presto.spi.ConnectorSession;
@@ -41,6 +42,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class SpreadsheetMetadataTest {
+
+  private static UserGroupInformation ugi;
+
+  static {
+    try {
+      ugi = UserGroupInformation.getCurrentUser();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   private static final String SCHEMA_NAME = "presto_example_xlsx";
 
@@ -53,7 +64,7 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testListSchemaNames() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(conf, basePath, SPREADSHEETS, useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache);
     List<String> listSchemaNames = spreadsheetMetadata.listSchemaNames(SESSION);
     assertEquals(1, listSchemaNames.size());
     assertEquals(SCHEMA_NAME, listSchemaNames.get(0));
@@ -62,7 +73,7 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testListTables() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(conf, basePath, SPREADSHEETS, useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     assertEquals(2, listTables.size());
     List<String> tables = new ArrayList<String>();
@@ -78,14 +89,14 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testGetTableHandle() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(conf, basePath, SPREADSHEETS, useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     for (SchemaTableName name : listTables) {
       ConnectorTableHandle tableHandle = spreadsheetMetadata.getTableHandle(SESSION, name);
       assertTrue(tableHandle instanceof SpreadsheetTableHandle);
       SpreadsheetTableHandle spreadsheetTableHandle = (SpreadsheetTableHandle) tableHandle;
-      String filePath = new Path(new Path(new Path(basePath, SESSION.getUser()), SPREADSHEETS), PRESTO_EXAMPLE_XLSX)
-          .toString();
+      String filePath = new Path(new Path(new Path(basePath, SESSION.getUser()), SPREADSHEETS),
+          PRESTO_EXAMPLE_XLSX).toString();
       assertEquals(filePath, spreadsheetTableHandle.getSpreadsheetPath());
       SchemaTableName tableName = spreadsheetTableHandle.getTableName();
       assertEquals(name, tableName);

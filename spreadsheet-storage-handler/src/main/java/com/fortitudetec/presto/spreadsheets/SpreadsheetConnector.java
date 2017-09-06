@@ -16,8 +16,11 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import com.facebook.presto.spi.connector.Connector;
 import com.facebook.presto.spi.connector.ConnectorMetadata;
@@ -32,10 +35,11 @@ public class SpreadsheetConnector implements Connector {
   private final ConnectorSplitManager _splitManager;
   private final ConnectorRecordSetProvider _recordSetProvider;
 
-  public SpreadsheetConnector(Configuration configuration, Path basePath, String spreadsheetSubDir, boolean useFileCache) {
-    _metadata = new SpreadsheetMetadata(configuration, basePath, spreadsheetSubDir, useFileCache);
+  public SpreadsheetConnector(UserGroupInformation ugi, Configuration configuration, Path basePath,
+      String spreadsheetSubDir, boolean useFileCache) throws IOException {
+    _metadata = new SpreadsheetMetadata(ugi, configuration, basePath, spreadsheetSubDir, useFileCache);
     _splitManager = new SpreadsheetSplitManager();
-    _recordSetProvider = new SpreadsheetRecordSetProvider(configuration, useFileCache);
+    _recordSetProvider = new SpreadsheetRecordSetProvider(ugi, configuration, useFileCache);
   }
 
   @Override
