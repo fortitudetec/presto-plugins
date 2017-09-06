@@ -143,7 +143,7 @@ public class SpreadsheetReader {
     try (FSDataInputStream inputStream = fileSystem.open(sheetFsPath)) {
       onDiskFileStatus.readFields(inputStream);
     }
-    return onDiskFileStatus.equals(fileStatus);
+    return onDiskFileStatus.getModificationTime() == fileStatus.getModificationTime();
   }
 
   public long getLength() {
