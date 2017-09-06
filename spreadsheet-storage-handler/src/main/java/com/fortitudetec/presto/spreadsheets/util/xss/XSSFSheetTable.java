@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fortitudetec.presto.spreadsheets.util;
+package com.fortitudetec.presto.spreadsheets.util.xss;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +26,10 @@ import java.util.Set;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+
+import com.fortitudetec.presto.spreadsheets.util.BaseTable;
+import com.fortitudetec.presto.spreadsheets.util.ColumnValue;
+import com.fortitudetec.presto.spreadsheets.util.TableType;
 
 public class XSSFSheetTable extends BaseTable {
 
@@ -56,10 +60,10 @@ public class XSSFSheetTable extends BaseTable {
     int numnberOfRows = 0;
     Iterator<Row> iterator = sheet.iterator();
     while (iterator.hasNext()) {
-      iterator.next();
-      numnberOfRows++;
+      Row row = iterator.next();
+      numnberOfRows = Math.max(numnberOfRows, row.getRowNum());
     }
-    return numnberOfRows;
+    return numnberOfRows + 1;
   }
 
   private void reduceColumnNames() {
@@ -78,7 +82,8 @@ public class XSSFSheetTable extends BaseTable {
       Set<String> value = e.getValue();
       if (value.size() == 1) {
         String newName = e.getKey();
-        String currentName = value.iterator().next();
+        String currentName = value.iterator()
+                                  .next();
         _columnNames.put(newName, _columnNames.remove(currentName));
       }
     }

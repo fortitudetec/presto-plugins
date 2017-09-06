@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.fortitudetec.presto.spreadsheets.util.xss.XSSFSheetTable;
 import com.google.common.collect.ImmutableList;
 
 public class SpreadsheetReader {
@@ -65,7 +66,8 @@ public class SpreadsheetReader {
     FileStatus[] listStatus = fileSystem.listStatus(cachePath, new PathFilter() {
       @Override
       public boolean accept(Path path) {
-        if (path.getName().startsWith("sheet.")) {
+        if (path.getName()
+                .startsWith("sheet.")) {
           return true;
         }
         return false;
@@ -100,8 +102,7 @@ public class SpreadsheetReader {
 
   private XSSFSheetTable getXSSFSheetTable(XSSFSheet sheet) {
     String normalizeName = NormalizeName.normalizeName(sheet.getSheetName(), _tables.keySet());
-    XSSFSheetTable tableXSSFSheet = new XSSFSheetTable(normalizeName, sheet);
-    return tableXSSFSheet;
+    return new XSSFSheetTable(normalizeName, sheet);
   }
 
   private Path getSheetFsPath(Path cachePath) {
