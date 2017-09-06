@@ -21,6 +21,8 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -88,18 +90,25 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   @Override
   public List<SchemaTableName> listTables(ConnectorSession session, String schemaNameOrNull) {
     if (schemaNameOrNull == null) {
-      return ImmutableList.of();
+      Map<String, Path> schemaMap = getUgi(session).doAs(new MapSchemaNames(session.getUser()));
+      Set<String> schemaSet = new TreeSet<>(schemaMap.keySet());
+      Builder<SchemaTableName> builder = ImmutableList.builder();
+      for (String schemaName : schemaSet) {
+        builder.addAll(listTables(session, schemaName));
+      }
+      return builder.build();
+    } else {
+      Path spreadsheetBasePath = getSpreadsheetBasePath(session.getUser());
+      Path filePath = getSpreadsheetFilePath(session, spreadsheetBasePath, schemaNameOrNull);
+      SpreadsheetReader spreadSheetHelper = getUgi(session).doAs(
+          new GetSpreadsheetHelper(_useFileCache, filePath, _configuration));
+      List<String> tableNames = spreadSheetHelper.getTableNames();
+      Builder<SchemaTableName> builder = ImmutableList.builder();
+      for (String table : tableNames) {
+        builder.add(new SchemaTableName(schemaNameOrNull, table));
+      }
+      return builder.build();
     }
-    Path spreadsheetBasePath = getSpreadsheetBasePath(session.getUser());
-    Path filePath = getSpreadsheetFilePath(session, spreadsheetBasePath, schemaNameOrNull);
-    SpreadsheetReader spreadSheetHelper = getUgi(session).doAs(
-        new GetSpreadsheetHelper(_useFileCache, filePath, _configuration));
-    List<String> tableNames = spreadSheetHelper.getTableNames();
-    Builder<SchemaTableName> builder = ImmutableList.builder();
-    for (String table : tableNames) {
-      builder.add(new SchemaTableName(schemaNameOrNull, table));
-    }
-    return builder.build();
   }
 
   @Override
@@ -183,15 +192,12 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
       try {
         FileSystem fileSystem = _basePath.getFileSystem(_configuration);
         Path path = getSpreadsheetBasePath(_user);
-        FileStatus[] listStatus = fileSystem.listStatus(path, new PathFilter() {
-          @Override
-          public boolean accept(Path path) {
-            String name = path.getName();
-            if (name.startsWith(".")) {
-              return false;
-            }
-            return name.endsWith(".xlsx");
+        FileStatus[] listStatus = fileSystem.listStatus(path, (PathFilter) path1 -> {
+          String name = path1.getName();
+          if (name.startsWith(".")) {
+            return false;
           }
+          return name.endsWith(".xlsx");
         });
         Map<String, Path> map = new HashMap<>();
         for (FileStatus fileStatus : listStatus) {
