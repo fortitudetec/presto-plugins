@@ -16,10 +16,8 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
@@ -74,19 +72,19 @@ public class SpreadsheetConnectorFactory implements ConnectorFactory {
       LOGGER.info("Loading filesystem type " + fs.getScheme() + " class " + fs.getClass());
       _configuration.setClass("fs." + fs.getScheme() + ".impl", fs.getClass(), FileSystem.class);
     }
-    testConfiguration(_configuration);
+    // testConfiguration(_configuration);
   }
 
-  private void testConfiguration(Configuration configuration) {
-    try {
-      FileSystem fileSystem = FileSystem.get(configuration);
-      fileSystem.listStatus(new Path("/"));
-      LOGGER.info("Root path lookup successful.");
-    } catch (IOException e) {
-      LOGGER.log(Level.SEVERE, "Could not lookup from root path.");
-      throw new RuntimeException(e);
-    }
-  }
+  // private void testConfiguration(Configuration configuration) {
+  // try {
+  // FileSystem fileSystem = FileSystem.get(configuration);
+  // fileSystem.listStatus(new Path("/"));
+  // LOGGER.info("Root path lookup successful.");
+  // } catch (IOException e) {
+  // LOGGER.log(Level.SEVERE, "Could not lookup from root path.");
+  // throw new RuntimeException(e);
+  // }
+  // }
 
   @Override
   public ConnectorHandleResolver getHandleResolver() {
