@@ -20,9 +20,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -37,7 +36,7 @@ import com.google.common.collect.ImmutableList;
 
 public class SpreadsheetReader {
 
-  private static final Log LOG = LogFactory.getLog(SpreadsheetReader.class);
+  private static final Logger LOGGER = Logger.getLogger(SpreadsheetReader.class.getName());
 
   private final Map<String, Table> _tables = new ConcurrentHashMap<String, Table>();
   private final long _length;
@@ -115,7 +114,7 @@ public class SpreadsheetReader {
 
   private void writeTable(FileSystem fileSystem, Path cacheDir, BaseTable table) throws IOException {
     Path file = new Path(cacheDir, "sheet." + table.getName());
-    LOG.info("Writing cache table [" + file + "].");
+    LOGGER.info("Writing cache table [" + file + "].");
     try (FSDataOutputStream outputStream = fileSystem.create(file)) {
       table.write(outputStream);
     }
