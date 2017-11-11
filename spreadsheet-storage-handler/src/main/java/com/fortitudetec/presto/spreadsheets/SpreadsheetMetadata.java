@@ -21,6 +21,8 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -32,18 +34,22 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
+import com.facebook.presto.spi.ConnectorTableLayout;
+import com.facebook.presto.spi.ConnectorTableLayoutHandle;
+import com.facebook.presto.spi.ConnectorTableLayoutResult;
+import com.facebook.presto.spi.ConnectorTableMetadata;
+import com.facebook.presto.spi.Constraint;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
+import com.facebook.presto.spi.SchemaTablePrefix;
+import com.facebook.presto.spi.connector.ConnectorMetadata;
 import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.DoubleType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
-import com.fortitudetec.presto.BaseColumnHandle;
-import com.fortitudetec.presto.BaseReadOnlyConnectorMetadata;
-import com.fortitudetec.presto.BaseTableHandle;
-import com.fortitudetec.presto.BaseTableLayoutHandle;
 import com.fortitudetec.presto.spreadsheets.util.NormalizeName;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 import com.fortitudetec.presto.spreadsheets.util.Table;
@@ -52,13 +58,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 
-public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
+public class SpreadsheetMetadata implements ConnectorMetadata {
 
   private final Path _basePath;
   private final Configuration _configuration;
   private final String _spreadsheetSubDir;
   private final boolean _useFileCache;
   private final UserGroupInformation _ugi;
+
+  private static final String DEFAULT_COMMENT = "";
 
   public SpreadsheetMetadata(UserGroupInformation ugi, Configuration configuration, Path basePath,
       String spreadsheetSubDir, boolean useFileCache) throws IOException {
@@ -70,8 +78,66 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   }
 
   @Override
-  protected BaseTableLayoutHandle createTableLayoutHandle(BaseTableHandle tableHandle) {
-    return new SpreadsheetTableLayoutHandle((SpreadsheetTableHandle) tableHandle);
+  public List<ConnectorTableLayoutResult> getTableLayouts(ConnectorSession session, ConnectorTableHandle table,
+      Constraint<ColumnHandle> constraint, Optional<Set<ColumnHandle>> desiredColumns) {
+    SpreadsheetTableHandle tableHandle = (SpreadsheetTableHandle) table;
+    SpreadsheetTableLayoutHandle baseTableLayoutHandle = createTableLayoutHandle(tableHandle);
+    ConnectorTableLayout layout = new ConnectorTableLayout(baseTableLayoutHandle);
+    return ImmutableList.of(new ConnectorTableLayoutResult(layout, constraint.getSummary()));
+  }
+
+  @Override
+  public ConnectorTableLayout getTableLayout(ConnectorSession session, ConnectorTableLayoutHandle handle) {
+    SpreadsheetTableLayoutHandle layout = (SpreadsheetTableLayoutHandle) handle;
+    List<ConnectorTableLayoutResult> tableLayouts = getTableLayouts(session, layout.getTable(),
+        Constraint.<ColumnHandle>alwaysTrue(), Optional.empty());
+    ConnectorTableLayoutResult connectorTableLayoutResult = tableLayouts.get(0);
+    return connectorTableLayoutResult.getTableLayout();
+  }
+
+  @Override
+  public ColumnMetadata getColumnMetadata(ConnectorSession session, ConnectorTableHandle tableHandle,
+      ColumnHandle columnHandle) {
+    SpreadsheetColumnHandle baseColumnHandle = (SpreadsheetColumnHandle) columnHandle;
+    return new ColumnMetadata(baseColumnHandle.getColumnName(), baseColumnHandle.getType(), DEFAULT_COMMENT, false);
+  }
+
+  @Override
+  public ConnectorTableMetadata getTableMetadata(ConnectorSession session, ConnectorTableHandle table) {
+    SpreadsheetTableHandle baseTableHandle = (SpreadsheetTableHandle) table;
+    Builder<ColumnMetadata> builder = ImmutableList.builder();
+    Map<String, ColumnHandle> columnHandles = getColumnHandles(session, table);
+    for (Entry<String, ColumnHandle> e : columnHandles.entrySet()) {
+      ColumnMetadata columnMetadata = getColumnMetadata(session, table, e.getValue());
+      builder.add(columnMetadata);
+    }
+    return new ConnectorTableMetadata(baseTableHandle.getTableName(), builder.build());
+  }
+
+  @Override
+  public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession session,
+      SchemaTablePrefix prefix) {
+    ImmutableMap.Builder<SchemaTableName, List<ColumnMetadata>> mapBuilder = ImmutableMap.builder();
+    List<String> listSchemaNames = listSchemaNames(session);
+    for (String schema : listSchemaNames) {
+      List<SchemaTableName> listTables = listTables(session, schema);
+      for (SchemaTableName schemaTableName : listTables) {
+        if (prefix.matches(schemaTableName)) {
+          Builder<ColumnMetadata> builder = ImmutableList.builder();
+          ConnectorTableHandle tableHandle = getTableHandle(session, schemaTableName);
+          Map<String, ColumnHandle> columnHandles = getColumnHandles(session, tableHandle);
+          for (Entry<String, ColumnHandle> e : columnHandles.entrySet()) {
+            builder.add(getColumnMetadata(session, tableHandle, e.getValue()));
+          }
+          mapBuilder.put(schemaTableName, builder.build());
+        }
+      }
+    }
+    return mapBuilder.build();
+  }
+
+  private SpreadsheetTableLayoutHandle createTableLayoutHandle(SpreadsheetTableHandle tableHandle) {
+    return new SpreadsheetTableLayoutHandle(tableHandle);
   }
 
   @Override
@@ -124,7 +190,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
     for (String columnName : columnNames) {
       TableType columnType = table.getType(columnName);
       Type type = getType(columnType);
-      builder.put(columnName, new BaseColumnHandle(columnName, type));
+      builder.put(columnName, new SpreadsheetColumnHandle(columnName, type));
     }
     return builder.build();
   }
@@ -250,6 +316,7 @@ public class SpreadsheetMetadata extends BaseReadOnlyConnectorMetadata {
   }
 
   public static UserGroupInformation getProxyUserGroupInformation(ConnectorSession session, UserGroupInformation ugi) {
-    return UserGroupInformation.createProxyUser(session.getUser(), ugi);
+    return ugi;
+//    return UserGroupInformation.createProxyUser(session.getUser(), ugi);
   }
 }

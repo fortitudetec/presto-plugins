@@ -16,22 +16,28 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
+import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.SchemaTableName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fortitudetec.presto.BaseTableHandle;
 
-public class SpreadsheetTableHandle extends BaseTableHandle {
+public class SpreadsheetTableHandle implements ConnectorTableHandle {
 
   private final String _user;
   private final String _spreadsheetPath;
+  private final SchemaTableName _tableName;
 
   @JsonCreator
-  public SpreadsheetTableHandle(@JsonProperty("user") String user,
-      @JsonProperty("tableName") SchemaTableName tableName, @JsonProperty("spreadsheetPath") String spreadsheetPath) {
-    super(tableName);
+  public SpreadsheetTableHandle(@JsonProperty("user") String user, @JsonProperty("tableName") SchemaTableName tableName,
+      @JsonProperty("spreadsheetPath") String spreadsheetPath) {
+    _tableName = tableName;
     _user = user;
     _spreadsheetPath = spreadsheetPath;
+  }
+
+  @JsonProperty
+  public SchemaTableName getTableName() {
+    return _tableName;
   }
 
   @JsonProperty

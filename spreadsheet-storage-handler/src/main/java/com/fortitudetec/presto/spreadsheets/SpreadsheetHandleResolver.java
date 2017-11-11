@@ -22,7 +22,6 @@ import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
-import com.fortitudetec.presto.BaseColumnHandle;
 
 public class SpreadsheetHandleResolver implements ConnectorHandleResolver {
 
@@ -48,7 +47,7 @@ public class SpreadsheetHandleResolver implements ConnectorHandleResolver {
 
   @Override
   public Class<? extends ColumnHandle> getColumnHandleClass() {
-    return BaseColumnHandle.class;
+    return SpreadsheetColumnHandle.class;
   }
 
 }

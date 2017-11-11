@@ -16,18 +16,38 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
+import java.util.List;
+
+import com.facebook.presto.spi.ConnectorSplit;
+import com.facebook.presto.spi.HostAddress;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fortitudetec.presto.BaseSplit;
+import com.google.common.collect.ImmutableList;
 
-public class SpreadsheetSplit extends BaseSplit {
+public class SpreadsheetSplit implements ConnectorSplit {
 
-  public SpreadsheetSplit(@JsonProperty("spreadsheetTableHandle") SpreadsheetTableHandle spreadsheetTableHandle) {
-    super(spreadsheetTableHandle);
+  private final SpreadsheetTableHandle _tableHandle;
+
+  public SpreadsheetSplit(@JsonProperty("tableHandle") SpreadsheetTableHandle spreadsheetTableHandle) {
+    _tableHandle = spreadsheetTableHandle;
   }
 
   @JsonProperty
-  public SpreadsheetTableHandle getSpreadsheetTableHandle() {
-    return (SpreadsheetTableHandle) _tableHandle;
+  public SpreadsheetTableHandle getTableHandle() {
+    return _tableHandle;
   }
 
+  @Override
+  public boolean isRemotelyAccessible() {
+    return true;
+  }
+
+  @Override
+  public List<HostAddress> getAddresses() {
+    return ImmutableList.of();
+  }
+
+  @Override
+  public Object getInfo() {
+    return this;
+  }
 }

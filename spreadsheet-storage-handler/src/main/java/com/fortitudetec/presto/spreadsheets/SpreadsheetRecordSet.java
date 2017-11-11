@@ -22,7 +22,6 @@ import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.type.Type;
-import com.fortitudetec.presto.BaseColumnHandle;
 import com.fortitudetec.presto.spreadsheets.util.SpreadsheetReader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -30,16 +29,16 @@ import com.google.common.collect.ImmutableList.Builder;
 public class SpreadsheetRecordSet implements RecordSet {
 
   private final List<Type> _types;
-  private final List<BaseColumnHandle> _columns;
+  private final List<SpreadsheetColumnHandle> _columns;
   private final SpreadsheetReader _spreadSheetHelper;
   private final String _tableName;
 
   public SpreadsheetRecordSet(String tableName, SpreadsheetReader spreadSheetHelper,
       List<? extends ColumnHandle> columns) {
     Builder<Type> builder1 = ImmutableList.builder();
-    Builder<BaseColumnHandle> builder2 = ImmutableList.builder();
+    Builder<SpreadsheetColumnHandle> builder2 = ImmutableList.builder();
     for (ColumnHandle columnHandle : columns) {
-      BaseColumnHandle baseColumnHandle = (BaseColumnHandle) columnHandle;
+      SpreadsheetColumnHandle baseColumnHandle = (SpreadsheetColumnHandle) columnHandle;
       builder1.add(baseColumnHandle.getType());
       builder2.add(baseColumnHandle);
     }

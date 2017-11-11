@@ -16,22 +16,35 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.type.Type;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.facebook.presto.spi.Plugin;
-import com.facebook.presto.spi.connector.ConnectorFactory;
-import com.google.common.collect.ImmutableList;
+public class SpreadsheetColumnHandle implements ColumnHandle {
 
-public class SpreadsheetPlugin implements Plugin {
+  protected final String _columnName;
+  protected final Type _type;
+
+  @JsonCreator
+  public SpreadsheetColumnHandle(@JsonProperty("columnName") String columnName, @JsonProperty("type") Type type) {
+    _columnName = columnName;
+    _type = type;
+  }
+
+  @JsonProperty
+  public String getColumnName() {
+    return _columnName;
+  }
+
+  @JsonProperty
+  public Type getType() {
+    return _type;
+  }
 
   @Override
-  public Iterable<ConnectorFactory> getConnectorFactories() {
-    return ImmutableList.of(new SpreadsheetConnectorFactory(getClassLoader()));
+  public String toString() {
+    return "BaseColumnHandle [_columnName=" + _columnName + ", _type=" + _type + "]";
   }
 
-  private static ClassLoader getClassLoader() {
-    return firstNonNull(Thread.currentThread()
-                              .getContextClassLoader(),
-        SpreadsheetPlugin.class.getClassLoader());
-  }
 }

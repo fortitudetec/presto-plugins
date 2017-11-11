@@ -16,21 +16,22 @@
  */
 package com.fortitudetec.presto.spreadsheets;
 
+import com.facebook.presto.spi.ConnectorTableLayoutHandle;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fortitudetec.presto.BaseTableLayoutHandle;
 
-public class SpreadsheetTableLayoutHandle extends BaseTableLayoutHandle {
+public class SpreadsheetTableLayoutHandle implements ConnectorTableLayoutHandle {
+
+  private final SpreadsheetTableHandle _table;
 
   @JsonCreator
   public SpreadsheetTableLayoutHandle(@JsonProperty("table") SpreadsheetTableHandle table) {
-    super(table);
+    _table = table;
   }
 
-  @Override
   @JsonProperty
   public SpreadsheetTableHandle getTable() {
-    return (SpreadsheetTableHandle) _table;
+    return _table;
   }
 
 }

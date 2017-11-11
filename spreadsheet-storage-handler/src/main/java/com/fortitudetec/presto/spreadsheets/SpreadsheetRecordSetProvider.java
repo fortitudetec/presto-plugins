@@ -46,7 +46,7 @@ public class SpreadsheetRecordSetProvider implements ConnectorRecordSetProvider 
   public RecordSet getRecordSet(ConnectorTransactionHandle transactionHandle, ConnectorSession session,
       ConnectorSplit split, List<? extends ColumnHandle> columns) {
     SpreadsheetSplit spreadsheetSplit = (SpreadsheetSplit) split;
-    SpreadsheetTableHandle spreadsheetTableHandle = spreadsheetSplit.getSpreadsheetTableHandle();
+    SpreadsheetTableHandle spreadsheetTableHandle = spreadsheetSplit.getTableHandle();
     SchemaTableName schemaTableName = spreadsheetTableHandle.getTableName();
     UserGroupInformation proxy = SpreadsheetMetadata.getProxyUserGroupInformation(session, _ugi);
     SpreadsheetReader spreadSheetHelper = SpreadsheetMetadata.getSpreadSheetHelper(proxy, session,

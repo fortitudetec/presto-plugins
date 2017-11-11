@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -55,8 +56,8 @@ public class SpreadsheetMetadataTest {
 
   private static final String SCHEMA_NAME = "presto_example_xlsx";
 
-  public static final ConnectorSession SESSION = new TestingConnectorSession("user1", UTC_KEY, ENGLISH,
-      System.currentTimeMillis(), ImmutableList.of(), ImmutableMap.of());
+  public static final ConnectorSession SESSION = new TestingConnectorSession("user1", Optional.of("test"), UTC_KEY,
+      ENGLISH, System.currentTimeMillis(), ImmutableList.of(), ImmutableMap.of());
 
   private boolean useFileCache = true;
   private Configuration conf = new Configuration();
