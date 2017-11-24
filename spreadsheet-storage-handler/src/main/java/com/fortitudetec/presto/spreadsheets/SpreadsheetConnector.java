@@ -36,10 +36,10 @@ public class SpreadsheetConnector implements Connector {
   private final ConnectorRecordSetProvider _recordSetProvider;
 
   public SpreadsheetConnector(UserGroupInformation ugi, Configuration configuration, Path basePath,
-      String spreadsheetSubDir, boolean useFileCache) throws IOException {
-    _metadata = new SpreadsheetMetadata(ugi, configuration, basePath, spreadsheetSubDir, useFileCache);
+      String spreadsheetSubDir, boolean useFileCache, boolean proxyUser) throws IOException {
+    _metadata = new SpreadsheetMetadata(ugi, configuration, basePath, spreadsheetSubDir, useFileCache, proxyUser);
     _splitManager = new SpreadsheetSplitManager();
-    _recordSetProvider = new SpreadsheetRecordSetProvider(ugi, configuration, useFileCache);
+    _recordSetProvider = new SpreadsheetRecordSetProvider(ugi, configuration, useFileCache, proxyUser);
   }
 
   @Override

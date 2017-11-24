@@ -65,7 +65,8 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testListSchemaNames() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache,
+        true);
     List<String> listSchemaNames = spreadsheetMetadata.listSchemaNames(SESSION);
     assertEquals(1, listSchemaNames.size());
     assertEquals(SCHEMA_NAME, listSchemaNames.get(0));
@@ -74,7 +75,8 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testListTables() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache,
+        true);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     assertEquals(2, listTables.size());
     List<String> tables = new ArrayList<String>();
@@ -90,7 +92,8 @@ public class SpreadsheetMetadataTest {
   @Test
   public void testGetTableHandle() throws IOException {
     Path basePath = setupTest(conf, SESSION.getUser(), SpreadsheetMetadataTest.class);
-    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache);
+    SpreadsheetMetadata spreadsheetMetadata = new SpreadsheetMetadata(ugi, conf, basePath, SPREADSHEETS, useFileCache,
+        true);
     List<SchemaTableName> listTables = spreadsheetMetadata.listTables(SESSION, SCHEMA_NAME);
     for (SchemaTableName name : listTables) {
       ConnectorTableHandle tableHandle = spreadsheetMetadata.getTableHandle(SESSION, name);

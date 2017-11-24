@@ -33,6 +33,8 @@ import com.facebook.presto.spi.connector.ConnectorFactory;
 
 public class SpreadsheetConnectorFactory implements ConnectorFactory {
 
+  private static final String PROXY_USER = "proxyUser";
+
   private static final Logger LOGGER = Logger.getLogger(SpreadsheetConnectorFactory.class.getName());
 
   private static final String SPREADSHEET = "spreadsheet";
@@ -58,13 +60,18 @@ public class SpreadsheetConnectorFactory implements ConnectorFactory {
     Path basePath = new Path(config.get(BASEPATH));
     String spreadsheetSubDir = config.get(SUBDIR);
     String useFileCacheStr = config.get(USE_FILE_CACHE);
+    String proxyUserStr = config.get(PROXY_USER);
+    boolean proxyUser = false;
+    if (proxyUserStr != null) {
+      proxyUser = Boolean.parseBoolean(proxyUserStr);
+    }
     boolean useFileCache = true;
     if (useFileCacheStr != null) {
       useFileCache = Boolean.parseBoolean(useFileCacheStr);
     }
     try {
       return new SpreadsheetConnector(UserGroupInformation.getCurrentUser(), _configuration, basePath,
-          spreadsheetSubDir, useFileCache);
+          spreadsheetSubDir, useFileCache, proxyUser);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

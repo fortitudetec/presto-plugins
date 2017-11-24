@@ -18,6 +18,7 @@ package com.fortitudetec.presto.spreadsheets;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,11 +66,13 @@ public class SpreadsheetMetadata implements ConnectorMetadata {
   private final String _spreadsheetSubDir;
   private final boolean _useFileCache;
   private final UserGroupInformation _ugi;
+  private final boolean _proxyUser;
 
   private static final String DEFAULT_COMMENT = "";
 
   public SpreadsheetMetadata(UserGroupInformation ugi, Configuration configuration, Path basePath,
-      String spreadsheetSubDir, boolean useFileCache) throws IOException {
+      String spreadsheetSubDir, boolean useFileCache, boolean proxyUser) throws IOException {
+    _proxyUser = proxyUser;
     _basePath = basePath;
     _configuration = configuration;
     _spreadsheetSubDir = spreadsheetSubDir;
@@ -258,19 +261,19 @@ public class SpreadsheetMetadata implements ConnectorMetadata {
       try {
         FileSystem fileSystem = _basePath.getFileSystem(_configuration);
         Path path = getSpreadsheetBasePath(_user);
-        FileStatus[] listStatus = fileSystem.listStatus(path, (PathFilter) path1 -> {
-          String name = path1.getName();
+        FileStatus[] listStatus = fileSystem.listStatus(path, (PathFilter) p -> {
+          String name = p.getName();
           if (name.startsWith(".")) {
             return false;
           }
           return name.endsWith(".xlsx");
         });
+        Arrays.asList(listStatus);
         Map<String, Path> map = new HashMap<>();
         for (FileStatus fileStatus : listStatus) {
-          String prestoSchemaName = NormalizeName.normalizeName(fileStatus.getPath()
-                                                                          .getName(),
-              map.keySet());
-          map.put(prestoSchemaName, fileStatus.getPath());
+          String name = fileStatus.getPath()
+                                  .getName();
+          map.put(NormalizeName.normalizeName(name, map.keySet()), fileStatus.getPath());
         }
         return ImmutableMap.copyOf(map);
       } catch (IOException e) {
@@ -312,11 +315,17 @@ public class SpreadsheetMetadata implements ConnectorMetadata {
   }
 
   private UserGroupInformation getUgi(ConnectorSession session) {
-    return getProxyUserGroupInformation(session, _ugi);
+    return getUgi(session, _proxyUser, _ugi);
+  }
+
+  public static UserGroupInformation getUgi(ConnectorSession session, boolean proxyUser, UserGroupInformation ugi) {
+    if (proxyUser) {
+      return getProxyUserGroupInformation(session, ugi);
+    }
+    return ugi;
   }
 
   public static UserGroupInformation getProxyUserGroupInformation(ConnectorSession session, UserGroupInformation ugi) {
-    return ugi;
-//    return UserGroupInformation.createProxyUser(session.getUser(), ugi);
+    return UserGroupInformation.createProxyUser(session.getUser(), ugi);
   }
 }

@@ -35,8 +35,11 @@ public class SpreadsheetRecordSetProvider implements ConnectorRecordSetProvider 
   private final Configuration _configuration;
   private final boolean _useFileCache;
   private final UserGroupInformation _ugi;
+  private final boolean _proxyUser;
 
-  public SpreadsheetRecordSetProvider(UserGroupInformation ugi, Configuration configuration, boolean useFileCache) {
+  public SpreadsheetRecordSetProvider(UserGroupInformation ugi, Configuration configuration, boolean useFileCache,
+      boolean proxyUser) {
+    _proxyUser = proxyUser;
     _configuration = configuration;
     _useFileCache = useFileCache;
     _ugi = ugi;
@@ -48,7 +51,7 @@ public class SpreadsheetRecordSetProvider implements ConnectorRecordSetProvider 
     SpreadsheetSplit spreadsheetSplit = (SpreadsheetSplit) split;
     SpreadsheetTableHandle spreadsheetTableHandle = spreadsheetSplit.getTableHandle();
     SchemaTableName schemaTableName = spreadsheetTableHandle.getTableName();
-    UserGroupInformation proxy = SpreadsheetMetadata.getProxyUserGroupInformation(session, _ugi);
+    UserGroupInformation proxy = SpreadsheetMetadata.getUgi(session, _proxyUser, _ugi);
     SpreadsheetReader spreadSheetHelper = SpreadsheetMetadata.getSpreadSheetHelper(proxy, session,
         spreadsheetTableHandle, _configuration, _useFileCache);
     return new SpreadsheetRecordSet(schemaTableName.getTableName(), spreadSheetHelper, columns);
