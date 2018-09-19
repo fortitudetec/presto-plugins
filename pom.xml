@@ -26,10 +26,9 @@ under the License.
 	<packaging>pom</packaging>
 	<name>presto plugins</name>
 	<properties>
-		<presto.version>0.188</presto.version>
+		<presto.version>0.211</presto.version>
 		<guava.version>18.0</guava.version>
 		<javax.inject>1</javax.inject>
-		<hadoop-client.version>2.6.0-cdh5.4.5</hadoop-client.version>
 		<junit.version>4.12</junit.version>
 		<apache-poi.version>3.12</apache-poi.version>
 		<json-org.version>20090211</json-org.version>
@@ -116,11 +115,6 @@ under the License.
 				<groupId>org.apache.poi</groupId>
 				<artifactId>poi-ooxml</artifactId>
 				<version>${apache-poi.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.hadoop</groupId>
-				<artifactId>hadoop-client</artifactId>
-				<version>${hadoop-client.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.avro</groupId>

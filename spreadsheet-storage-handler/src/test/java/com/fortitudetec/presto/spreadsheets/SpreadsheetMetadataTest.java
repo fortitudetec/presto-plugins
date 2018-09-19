@@ -56,8 +56,7 @@ public class SpreadsheetMetadataTest {
 
   private static final String SCHEMA_NAME = "presto_example_xlsx";
 
-  public static final ConnectorSession SESSION = new TestingConnectorSession("user1", Optional.of("test"), UTC_KEY,
-      ENGLISH, System.currentTimeMillis(), ImmutableList.of(), ImmutableMap.of());
+  public static final ConnectorSession SESSION = new TestingConnectorSession(ImmutableList.of());
 
   private boolean useFileCache = true;
   private Configuration conf = new Configuration();
