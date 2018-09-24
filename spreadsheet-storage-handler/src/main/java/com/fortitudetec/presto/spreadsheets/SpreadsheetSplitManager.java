@@ -27,12 +27,15 @@ import com.google.common.collect.ImmutableList;
 public class SpreadsheetSplitManager implements ConnectorSplitManager {
 
   @Override
-  public ConnectorSplitSource getSplits(ConnectorTransactionHandle transactionHandle, ConnectorSession session,
-      ConnectorTableLayoutHandle layout) {
+  public ConnectorSplitSource getSplits(
+          ConnectorTransactionHandle transactionHandle,
+          ConnectorSession session,
+          ConnectorTableLayoutHandle layout,
+          SplitSchedulingStrategy splitSchedulingStrategy
+  ) {
     SpreadsheetTableLayoutHandle layoutHandle = (SpreadsheetTableLayoutHandle) layout;
     SpreadsheetTableHandle spreadsheetTableHandle = layoutHandle.getTable();
     SpreadsheetSplit spreadsheetSplit = new SpreadsheetSplit(spreadsheetTableHandle);
     return new FixedSplitSource(ImmutableList.of(spreadsheetSplit));
   }
-
 }
